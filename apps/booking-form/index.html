@@ -1,219 +1,64 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <!-- Basic metadata keeps the booking page responsive and discoverable. -->
+    <!-- Basic metadata keeps the static booking page responsive and discoverable. -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Request an appointment at Sable & Stone Beauty Studio." />
     <title>Book an appointment | Sable & Stone</title>
-
-    <!-- Fonts are loaded separately from the page styles for easier brand changes. -->
+    <!-- The version query strings prevent stale local assets during development. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet" />
-    <!-- Version query strings prevent the browser from reusing stale local assets during development. -->
-    <link rel="stylesheet" href="styles.css?v=3" />
+    <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
 <main class="booking-page">
-    <!-- The top bar establishes the fictional studio brand and contact option. -->
+    <!-- Header information is intentionally independent of the form logic. -->
     <header class="site-header">
-        <a class="brand" href="#top" aria-label="Sable and Stone home">
-            <span class="brand-mark" aria-hidden="true">S<span>&</span>S</span>
-            <span class="brand-name">Sable & Stone</span>
-        </a>
-
-        <div class="header-meta">
-            <span class="open-status"><span class="status-dot" aria-hidden="true"></span> Open today · 08:00–17:00</span>
-            <a class="contact-link" href="tel:+27000000000">Call the studio</a>
-        </div>
+        <a class="brand" href="#top" aria-label="Sable and Stone home"><span class="brand-mark" aria-hidden="true">S<span>&</span>S</span><span class="brand-name">Sable & Stone</span></a>
+        <div class="header-meta"><span class="open-status"><span class="status-dot" aria-hidden="true"></span> Open today · 08:00–17:00</span><a class="contact-link" href="tel:+27000000000">Call the studio</a></div>
     </header>
 
-    <!-- Intro copy is kept short so the service catalogue remains the main action. -->
-    <section class="page-intro" id="top" aria-labelledby="page-title">
-        <p class="eyebrow">Appointment request</p>
-        <h1 id="page-title">Make time for <em>you.</em></h1>
-        <p>Choose a service to begin. Your request will be reviewed by the studio before your appointment is confirmed.</p>
-    </section>
+    <!-- The intro keeps the service catalogue as the main booking action. -->
+    <section class="page-intro reveal" id="top" aria-labelledby="page-title"><p class="eyebrow">Appointment request</p><h1 id="page-title">Make time for <em>you.</em></h1><p>Choose a service to begin. Your request will be reviewed by the studio before your appointment is confirmed.</p></section>
 
     <div class="booking-layout">
-        <section class="catalogue-panel" aria-labelledby="services-title">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Step 01</p>
-                    <h2 id="services-title">Choose your service</h2>
-                </div>
-                <span class="section-hint">Prices in ZAR</span>
-            </div>
-
-            <!-- JavaScript reads the selected radio card and copies its data into the payload. -->
+        <section class="catalogue-panel reveal reveal-delay-1" aria-labelledby="services-title">
+            <div class="section-heading"><div><p class="eyebrow">Step 01</p><h2 id="services-title">Choose your service</h2></div><span class="section-hint">Prices in ZAR</span></div>
+            <!-- Radio cards provide a visual service catalogue while preserving keyboard access. -->
             <div class="service-grid" role="radiogroup" aria-label="Available services">
-                <label class="service-card">
-                    <input class="service-choice" type="radio" name="serviceChoice" value="basic-manicure" data-name="Basic manicure" data-duration="45" data-price="250" data-approval="false" />
-                    <span class="service-card-content">
-              <span class="service-card-topline"><span class="service-category">Hands</span><span class="service-radio" aria-hidden="true"></span></span>
-              <strong>Basic manicure</strong>
-              <span class="service-description">A neat, classic manicure for a clean everyday finish.</span>
-              <span class="service-meta"><span>45 min</span><b>R250</b></span>
-            </span>
-                </label>
-
-                <label class="service-card">
-                    <input class="service-choice" type="radio" name="serviceChoice" value="gel-overlay" data-name="Gel overlay" data-duration="60" data-price="300" data-approval="false" />
-                    <span class="service-card-content">
-              <span class="service-card-topline"><span class="service-category">Hands</span><span class="service-radio" aria-hidden="true"></span></span>
-              <strong>Gel overlay</strong>
-              <span class="service-description">A durable gel finish applied to your natural nails.</span>
-              <span class="service-meta"><span>60 min</span><b>R300</b></span>
-            </span>
-                </label>
-
-                <label class="service-card service-card-featured">
-                    <input class="service-choice" type="radio" name="serviceChoice" value="gel-overlay-art" data-name="Gel overlay with nail art" data-duration="120" data-price="450" data-approval="true" />
-                    <span class="service-card-content">
-              <span class="service-card-topline"><span class="service-category">Most requested</span><span class="service-radio" aria-hidden="true"></span></span>
-              <strong>Gel overlay with nail art</strong>
-              <span class="service-description">A gel overlay with simple, personalised nail art.</span>
-              <span class="service-meta"><span>120 min</span><b>From R450</b></span>
-            </span>
-                </label>
-
-                <label class="service-card">
-                    <input class="service-choice" type="radio" name="serviceChoice" value="acrylic-extensions" data-name="Acrylic extensions" data-duration="150" data-price="600" data-approval="true" />
-                    <span class="service-card-content">
-              <span class="service-card-topline"><span class="service-category">Extensions</span><span class="service-radio" aria-hidden="true"></span></span>
-              <strong>Acrylic extensions</strong>
-              <span class="service-description">Extensions with your choice of shape and finish.</span>
-              <span class="service-meta"><span>150 min</span><b>From R600</b></span>
-            </span>
-                </label>
-
-                <label class="service-card">
-                    <input class="service-choice" type="radio" name="serviceChoice" value="not-sure" data-name="Not sure yet" data-duration="60" data-price="0" data-approval="true" />
-                    <span class="service-card-content">
-              <span class="service-card-topline"><span class="service-category">Need advice?</span><span class="service-radio" aria-hidden="true"></span></span>
-              <strong>Not sure yet</strong>
-              <span class="service-description">Tell us what you have in mind and we’ll guide you.</span>
-              <span class="service-meta"><span>We’ll advise</span><b>Quote</b></span>
-            </span>
-                </label>
+                <label class="service-card"><input class="service-choice" type="radio" name="serviceChoice" value="basic-manicure" data-name="Basic manicure" data-duration="45" data-price="250" data-approval="false" /><span class="service-card-content"><span class="service-card-topline"><span class="service-category">Hands</span><span class="service-radio" aria-hidden="true"></span></span><strong>Basic manicure</strong><span class="service-description">A neat, classic manicure for a clean everyday finish.</span><span class="service-meta"><span>45 min</span><b>R250</b></span></span></label>
+                <label class="service-card"><input class="service-choice" type="radio" name="serviceChoice" value="gel-overlay" data-name="Gel overlay" data-duration="60" data-price="300" data-approval="false" /><span class="service-card-content"><span class="service-card-topline"><span class="service-category">Hands</span><span class="service-radio" aria-hidden="true"></span></span><strong>Gel overlay</strong><span class="service-description">A durable gel finish applied to your natural nails.</span><span class="service-meta"><span>60 min</span><b>R300</b></span></span></label>
+                <label class="service-card"><input class="service-choice" type="radio" name="serviceChoice" value="gel-overlay-art" data-name="Gel overlay with nail art" data-duration="120" data-price="450" data-approval="true" /><span class="service-card-content"><span class="service-card-topline"><span class="service-category">Most requested</span><span class="service-radio" aria-hidden="true"></span></span><strong>Gel overlay with nail art</strong><span class="service-description">A gel overlay with simple, personalised nail art.</span><span class="service-meta"><span>120 min</span><b>From R450</b></span></span></label>
+                <label class="service-card"><input class="service-choice" type="radio" name="serviceChoice" value="acrylic-extensions" data-name="Acrylic extensions" data-duration="150" data-price="600" data-approval="true" /><span class="service-card-content"><span class="service-card-topline"><span class="service-category">Extensions</span><span class="service-radio" aria-hidden="true"></span></span><strong>Acrylic extensions</strong><span class="service-description">Extensions with your choice of shape and finish.</span><span class="service-meta"><span>150 min</span><b>From R600</b></span></span></label>
+                <label class="service-card"><input class="service-choice" type="radio" name="serviceChoice" value="not-sure" data-name="Not sure yet" data-duration="60" data-price="0" data-approval="true" /><span class="service-card-content"><span class="service-card-topline"><span class="service-category">Need advice?</span><span class="service-radio" aria-hidden="true"></span></span><strong>Not sure yet</strong><span class="service-description">Tell us what you have in mind and we’ll guide you.</span><span class="service-meta"><span>We’ll advise</span><b>Quote</b></span></span></label>
             </div>
-
-            <!-- This preview gives the user confidence before moving to their details. -->
-            <aside class="selection-summary" id="selection-summary" aria-live="polite">
-                <span class="summary-icon" aria-hidden="true">✦</span>
-                <span><strong id="selected-service-name">No service selected</strong><small id="selected-service-detail">Choose a service above to continue.</small></span>
-            </aside>
+            <aside class="selection-summary" id="selection-summary" aria-live="polite"><span class="summary-icon" aria-hidden="true">✦</span><span><strong id="selected-service-name">No service selected</strong><small id="selected-service-detail">Choose a service above to continue.</small></span></aside>
         </section>
 
-        <section class="details-panel" aria-labelledby="details-title">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Step 02</p>
-                    <h2 id="details-title">Your preferred time</h2>
-                </div>
-            </div>
-
+        <section class="details-panel reveal reveal-delay-2" aria-labelledby="details-title">
+            <div class="section-heading"><div><p class="eyebrow">Step 02</p><h2 id="details-title">Your preferred time</h2></div></div>
             <form id="booking-form" novalidate>
-                <!-- This hidden field mirrors the selected service for the API contract. -->
-                <input id="serviceRequested" name="serviceRequested" type="hidden" />
-                <input id="serviceId" name="serviceId" type="hidden" />
-                <input id="durationMinutes" name="durationMinutes" type="hidden" />
-                <input id="quotedAmount" name="quotedAmount" type="hidden" />
-                <input id="requiresApproval" name="requiresApproval" type="hidden" />
-
-                <div class="form-step is-active" data-step="1">
-                    <div class="field-grid">
-                        <div class="field">
-                            <label for="preferredDate">Preferred date <span aria-hidden="true">*</span></label>
-                            <input id="preferredDate" name="preferredDate" type="date" required disabled />
-                            <small class="field-help" id="date-help">Choose a service first.</small>
-                            <small class="field-error" data-error-for="preferredDate"></small>
-                        </div>
-
-                        <div class="field">
-                            <label for="preferredTime">Available time <span aria-hidden="true">*</span></label>
-                            <!-- JavaScript replaces these options after checking the selected service and date. -->
-                            <select id="preferredTime" name="preferredTime" required disabled>
-                                <option value="" selected disabled>Choose a date first</option>
-                            </select>
-                            <small class="field-help" id="slot-help">Only open slots for the selected service will appear.</small>
-                            <small class="field-error" data-error-for="preferredTime"></small>
-                        </div>
-                    </div>
-
-                    <div class="availability-note"><span aria-hidden="true">◷</span> Select a service and date to see times that can fit the full appointment.</div>
-
-                    <div class="field-grid contact-fields">
-                        <div class="field field-full">
-                            <label for="clientName">Your name <span aria-hidden="true">*</span></label>
-                            <input id="clientName" name="clientName" type="text" autocomplete="name" placeholder="e.g. Amina Patel" required />
-                            <small class="field-error" data-error-for="clientName"></small>
-                        </div>
-
-                        <div class="field">
-                            <label for="phone">WhatsApp number <span aria-hidden="true">*</span></label>
-                            <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+27 82 123 4567" required />
-                            <small class="field-error" data-error-for="phone"></small>
-                        </div>
-
-                        <div class="field">
-                            <label for="email">Email <span class="optional">Optional</span></label>
-                            <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
-                            <small class="field-error" data-error-for="email"></small>
-                        </div>
-
-                        <div class="field field-full">
-                            <label for="notes">Anything we should know? <span class="optional">Optional</span></label>
-                            <textarea id="notes" name="notes" rows="3" maxlength="500" placeholder="Colours, length, existing product, or anything else..."></textarea>
-                            <div class="character-count"><span id="notes-count">0</span> / 500</div>
-                        </div>
-                    </div>
-
-                    <!-- The file input is visually represented by a styled label. -->
-                    <div class="upload-box" id="upload-box">
-                        <input id="inspirationImage" name="inspirationImage" type="file" accept="image/png,image/jpeg,image/webp" hidden />
-                        <label for="inspirationImage" class="upload-label">
-                            <span class="upload-icon" aria-hidden="true">＋</span>
-                            <span><strong>Add inspiration</strong><small>Optional · JPG, PNG or WEBP up to 5MB</small></span>
-                            <span class="upload-action">Browse</span>
-                        </label>
-                        <div class="file-preview" id="file-preview" hidden></div>
-                    </div>
-
-                    <div class="form-actions">
-                        <span class="policy-note"><span aria-hidden="true">⌁</span> Requests are reviewed before confirmation.</span>
-                        <button class="button button-primary" type="submit" id="submit-button">Send request <span aria-hidden="true">→</span></button>
-                    </div>
+                <!-- Hidden service fields keep the submitted payload aligned with the API contract. -->
+                <input id="serviceRequested" name="serviceRequested" type="hidden" /><input id="serviceId" name="serviceId" type="hidden" /><input id="durationMinutes" name="durationMinutes" type="hidden" /><input id="quotedAmount" name="quotedAmount" type="hidden" /><input id="requiresApproval" name="requiresApproval" type="hidden" />
+                <div class="field-grid">
+                    <div class="field"><label for="preferredDate">Preferred date <span aria-hidden="true">*</span></label><input id="preferredDate" name="preferredDate" type="date" required disabled /><small class="field-help" id="date-help">Choose a service first.</small><small class="field-error" data-error-for="preferredDate"></small></div>
+                    <div class="field"><label for="preferredTime">Available time <span aria-hidden="true">*</span></label><select id="preferredTime" name="preferredTime" required disabled><option value="" selected disabled>Choose a date first</option></select><small class="field-help" id="slot-help">Only open slots for the selected service will appear.</small><small class="field-error" data-error-for="preferredTime"></small></div>
                 </div>
-
-                <!-- The success state is shown after demo mode or n8n returns a booking reference. -->
-                <div class="success-state" id="success-state" hidden>
-                    <div class="success-mark" aria-hidden="true">✓</div>
-                    <p class="eyebrow">Request received</p>
-                    <h2>We’ll be in touch soon.</h2>
-                    <p>Thanks, <strong id="success-name">there</strong>. Your request has been sent to the studio for review.</p>
-                    <div class="reference-box">
-                        <span>Your reference</span>
-                        <strong id="reference-id">SALON-DEMO-0001</strong>
-                    </div>
-                    <button class="button button-secondary" type="button" id="start-over-button">Make another request</button>
-                </div>
-
-                <!-- Live messages are announced without interrupting the form. -->
-                <div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+                <div class="availability-note"><span aria-hidden="true">◷</span> Only times that fit the full service duration are shown.</div>
+                <div class="field-grid contact-fields"><div class="field field-full"><label for="clientName">Your name <span aria-hidden="true">*</span></label><input id="clientName" name="clientName" type="text" placeholder="e.g. Amina Patel" required /><small class="field-error" data-error-for="clientName"></small></div><div class="field"><label for="phone">WhatsApp number <span aria-hidden="true">*</span></label><input id="phone" name="phone" type="tel" placeholder="+27 82 123 4567" required /><small class="field-error" data-error-for="phone"></small></div><div class="field"><label for="email">Email <span class="optional">Optional</span></label><input id="email" name="email" type="email" placeholder="you@example.com" /><small class="field-error" data-error-for="email"></small></div><div class="field field-full"><label for="notes">Anything we should know? <span class="optional">Optional</span></label><textarea id="notes" name="notes" rows="3" maxlength="500" placeholder="Colours, length, existing product, or anything else..."></textarea><div class="character-count"><span id="notes-count">0</span> / 500</div></div></div>
+                <div class="form-actions"><span class="policy-note"><span aria-hidden="true">⌁</span> Requests are reviewed before confirmation.</span><button class="button button-primary" type="submit" id="submit-button">Send request <span aria-hidden="true">→</span></button></div><div class="form-status" id="form-status" role="status" aria-live="polite"></div>
+                <!-- The success state remains hidden until demo or backend submission succeeds. -->
+                <div class="success-state" id="success-state" hidden><div class="success-mark" aria-hidden="true">✓</div><p class="eyebrow">Request received</p><h2>We’ll be in touch soon.</h2><p>Your request has been sent to the studio for review.</p><button class="button button-secondary" type="button" id="start-over-button">Make another request</button></div>
             </form>
         </section>
     </div>
-
-    <!-- The policy footer is intentionally generic for this fictional portfolio demo. -->
-    <footer class="site-footer">
-        <span>Parkhurst, Johannesburg · Tuesday–Saturday</span>
-        <span>Deposit required after approval · Cancellation policy applies</span>
-    </footer>
+    <footer class="site-footer"><span>Parkhurst, Johannesburg · Tuesday–Saturday</span><span>Deposit required after approval · Cancellation policy applies</span></footer>
 </main>
-
-<!-- Keep this version in sync when frontend behaviour changes during development. -->
-<script src="app.js?v=3"></script>
+<!-- The visual enhancement is separate from the booking logic for maintainability. -->
+<script src="tilt-effects.js?v=1"></script>
+<!-- Cache-busting version ensures the repaired static script is loaded. -->
+<script src="app.js?v=4"></script>
 </body>
 </html>
