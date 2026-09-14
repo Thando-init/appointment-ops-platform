@@ -1,6 +1,6 @@
 package com.sablestone.booking.service;
 
-import java.com.sablestone.booking.domain.BookingModels;
+import com.sablestone.booking.domain.BookingModels;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -47,3 +47,4 @@ class AvailabilityServiceTest {
         assertTrue(response.slots().isEmpty());
     }
 }
+

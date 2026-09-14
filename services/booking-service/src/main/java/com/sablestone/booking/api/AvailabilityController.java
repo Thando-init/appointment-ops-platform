@@ -1,7 +1,7 @@
-package java.com.sablestone.booking.api;
+package com.sablestone.booking.api;
 
-import java.com.sablestone.booking.domain.BookingModels;
-import java.com.sablestone.booking.service.AvailabilityService;
+import com.sablestone.booking.domain.BookingModels;
+import com.sablestone.booking.service.AvailabilityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,4 +43,5 @@ public class AvailabilityController {
 
     public record HealthResponse(String status, String service) {}
 }
+
 

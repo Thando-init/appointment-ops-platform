@@ -1,6 +1,6 @@
-package java.com.sablestone.booking.service;
+package com.sablestone.booking.service;
 
-import java.com.sablestone.booking.domain.BookingModels;
+import com.sablestone.booking.domain.BookingModels;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -109,3 +109,4 @@ public class AvailabilityService {
         return new BookingModels.AvailabilityResponse(service.id(), date, service.durationMinutes(), BUFFER_MINUTES, slots);
     }
 }
+

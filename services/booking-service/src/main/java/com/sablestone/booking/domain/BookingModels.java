@@ -1,4 +1,4 @@
-package java.com.sablestone.booking.domain;
+package com.sablestone.booking.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -38,3 +38,4 @@ public final class BookingModels {
             List<AvailabilitySlot> slots
     ) {}
 }
+
