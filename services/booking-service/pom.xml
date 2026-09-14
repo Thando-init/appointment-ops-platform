@@ -31,6 +31,34 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- JDBC provides JdbcTemplate for database repositories. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL is the runtime database driver. -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Flyway runs versioned database migrations at startup. -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>10.20.1</version>
+        </dependency>
+
+        <!-- Required by Flyway for PostgreSQL-specific database support. -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>10.20.1</version>
+        </dependency>
+
+
         <!-- Test support will verify availability rules before database integration. -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

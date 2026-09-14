@@ -1,0 +1,26 @@
+services:
+  # PostgreSQL is the shared source of truth for services, schedules, and bookings.
+  # Docker keeps the local setup reproducible across Windows, macOS, and Linux.
+  postgres:
+    image: postgres:16-alpine
+    container_name: appointment-ops-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-appointment_ops}
+      POSTGRES_USER: ${POSTGRES_USER:-appointment_ops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-appointment_ops}
+    # The first port is the host port; the second is the container port.
+    ports:
+      - "5432:5432"
+    # A named volume keeps local database data after `docker compose down`.
+    volumes:
+      - appointment_ops_postgres_data:/var/lib/postgresql/data
+    # Spring Boot should only connect after PostgreSQL is accepting connections.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  appointment_ops_postgres_data:
