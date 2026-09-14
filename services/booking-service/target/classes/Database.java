@@ -1,4 +1,4 @@
-package java.com.database;
+package resources;
 
 public class Database {
 }
