@@ -3,6 +3,7 @@ package com.sablestone.booking.service;
 import com.sablestone.booking.domain.BookingModels;
 import com.sablestone.booking.domain.BookingRequests;
 import com.sablestone.booking.repository.BookingRepository;
+import com.sablestone.booking.repository.ScheduleRepository;
 import com.sablestone.booking.repository.ServiceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -32,6 +34,7 @@ class BookingServiceTest {
 
     private BookingRepository bookingRepository;
     private ServiceRepository serviceRepository;
+    private ScheduleRepository scheduleRepository;
     private BookingService bookingService;
 
     @BeforeEach
@@ -39,7 +42,11 @@ class BookingServiceTest {
         // Each test receives fresh mocks, preventing state from leaking between scenarios.
         bookingRepository = mock(BookingRepository.class);
         serviceRepository = mock(ServiceRepository.class);
-        bookingService = new BookingService(bookingRepository, serviceRepository);
+        scheduleRepository = mock(ScheduleRepository.class);
+        when(scheduleRepository.findBusinessHours(any())).thenReturn(
+                Optional.of(new BookingModels.BusinessHours(LocalTime.of(8, 0), LocalTime.of(17, 0))));
+        when(scheduleRepository.findBlockedPeriods(any())).thenReturn(List.of());
+        bookingService = new BookingService(bookingRepository, serviceRepository, scheduleRepository);
     }
 
     @Test
@@ -107,6 +114,45 @@ class BookingServiceTest {
 
         assertThrows(BookingService.SlotUnavailableException.class, () -> bookingService.create(request));
         verify(bookingRepository, never()).insert(any(), any(), any(), any(Boolean.class));
+    }
+
+    @Test
+    void rejectsAppointmentWhoseBufferRunsPastClosingTime() {
+        BookingModels.ServiceDefinition service = new BookingModels.ServiceDefinition(
+                "gel-overlay", "Gel overlay", 60, 300, false);
+        BookingRequests.CreateBookingRequest request = requestFor("gel-overlay", LocalTime.of(16, 0));
+        when(serviceRepository.findActiveById("gel-overlay")).thenReturn(Optional.of(service));
+
+        assertThrows(BookingService.ScheduleUnavailableException.class,
+                () -> bookingService.create(request));
+        verify(bookingRepository, never()).hasActiveOverlap(any(), any());
+    }
+
+    @Test
+    void rejectsClosedDayWithoutCheckingBookingOverlap() {
+        BookingRequests.CreateBookingRequest request = requestFor("gel-overlay", LocalTime.of(10, 0));
+        BookingModels.ServiceDefinition service = new BookingModels.ServiceDefinition(
+                "gel-overlay", "Gel overlay", 60, 300, false);
+        when(serviceRepository.findActiveById("gel-overlay")).thenReturn(Optional.of(service));
+        when(scheduleRepository.findBusinessHours(any())).thenReturn(Optional.empty());
+
+        assertThrows(BookingService.ScheduleUnavailableException.class,
+                () -> bookingService.create(request));
+        verify(bookingRepository, never()).hasActiveOverlap(any(), any());
+    }
+
+    @Test
+    void rejectsBlockedPeriodOverlap() {
+        BookingModels.ServiceDefinition service = new BookingModels.ServiceDefinition(
+                "gel-overlay", "Gel overlay", 60, 300, false);
+        BookingRequests.CreateBookingRequest request = requestFor("gel-overlay", LocalTime.of(12, 0));
+        when(serviceRepository.findActiveById("gel-overlay")).thenReturn(Optional.of(service));
+        when(scheduleRepository.findBlockedPeriods(any())).thenReturn(List.of(
+                new BookingModels.TimePeriod(LocalTime.of(12, 30), LocalTime.of(13, 0), "Studio break")));
+
+        assertThrows(BookingService.ScheduleUnavailableException.class,
+                () -> bookingService.create(request));
+        verify(bookingRepository, never()).hasActiveOverlap(any(), any());
     }
 
     /** Creates the same shape of request that the website will submit. */

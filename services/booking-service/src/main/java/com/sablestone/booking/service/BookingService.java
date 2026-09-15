@@ -3,6 +3,7 @@ package com.sablestone.booking.service;
 import com.sablestone.booking.domain.BookingModels;
 import com.sablestone.booking.domain.BookingRequests;
 import com.sablestone.booking.repository.BookingRepository;
+import com.sablestone.booking.repository.ScheduleRepository;
 import com.sablestone.booking.repository.ServiceRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,13 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ServiceRepository serviceRepository;
+    private final ScheduleRepository scheduleRepository;
 
-    public BookingService(BookingRepository bookingRepository, ServiceRepository serviceRepository) {
+    public BookingService(BookingRepository bookingRepository, ServiceRepository serviceRepository,
+                          ScheduleRepository scheduleRepository) {
         this.bookingRepository = bookingRepository;
         this.serviceRepository = serviceRepository;
+        this.scheduleRepository = scheduleRepository;
     }
 
     /**
@@ -43,6 +47,8 @@ public class BookingService {
         LocalDateTime end = start.plusMinutes(service.durationMinutes());
         LocalDateTime occupiedEnd = end.plusMinutes(AvailabilityService.BUFFER_MINUTES);
 
+        validateBusinessSchedule(request, start, occupiedEnd);
+
         // The same slot rules used for display must be rechecked before insertion.
         if (bookingRepository.hasActiveOverlap(start, occupiedEnd)) {
             throw new SlotUnavailableException(start, end);
@@ -59,6 +65,27 @@ public class BookingService {
         }
     }
 
+    /** Ensures a hand-crafted request obeys the same schedule rules as the UI. */
+    private void validateBusinessSchedule(BookingRequests.CreateBookingRequest request,
+                                          LocalDateTime start, LocalDateTime occupiedEnd) {
+        BookingModels.BusinessHours hours = scheduleRepository.findBusinessHours(
+                        request.preferredDate().getDayOfWeek())
+                .orElseThrow(() -> new ScheduleUnavailableException("The studio is closed on the selected date."));
+
+        LocalDateTime opening = LocalDateTime.of(request.preferredDate(), hours.opensAt());
+        LocalDateTime closing = LocalDateTime.of(request.preferredDate(), hours.closesAt());
+        if (start.isBefore(opening) || occupiedEnd.isAfter(closing)) {
+            throw new ScheduleUnavailableException("The appointment does not fit within business hours.");
+        }
+
+        boolean overlapsBlocked = scheduleRepository.findBlockedPeriods(request.preferredDate()).stream()
+                .anyMatch(period -> request.preferredTime().isBefore(period.end())
+                        && occupiedEnd.toLocalTime().isAfter(period.start()));
+        if (overlapsBlocked) {
+            throw new ScheduleUnavailableException("The selected time overlaps a blocked period.");
+        }
+    }
+
     /** Domain exception translated by the controller into HTTP 409 Conflict. */
     public static class SlotUnavailableException extends RuntimeException {
         private final LocalDateTime start;
@@ -72,5 +99,12 @@ public class BookingService {
 
         public LocalDateTime start() { return start; }
         public LocalDateTime end() { return end; }
+    }
+
+    /** Indicates a valid service request at an invalid studio time. */
+    public static class ScheduleUnavailableException extends RuntimeException {
+        public ScheduleUnavailableException(String message) {
+            super(message);
+        }
     }
 }

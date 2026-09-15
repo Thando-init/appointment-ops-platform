@@ -8,6 +8,7 @@ com\sablestone\booking\domain\BookingModels$ServiceDefinition.class
 com\sablestone\booking\service\BookingService$SlotUnavailableException.class
 com\sablestone\booking\domain\BookingRequests.class
 com\sablestone\booking\domain\BookingModels.class
+com\sablestone\booking\domain\BookingModels$BusinessHours.class
 com\sablestone\booking\service\AvailabilityService.class
 com\sablestone\booking\service\BookingService.class
 com\sablestone\booking\api\AvailabilityController$HealthResponse.class
@@ -17,3 +18,4 @@ com\sablestone\booking\domain\BookingModels$AvailabilitySlot.class
 com\sablestone\booking\domain\BookingRequests$BookingResponse.class
 com\sablestone\booking\repository\BookingRepository.class
 com\sablestone\booking\domain\BookingModels$ExistingBooking.class
+com\sablestone\booking\service\BookingService$ScheduleUnavailableException.class

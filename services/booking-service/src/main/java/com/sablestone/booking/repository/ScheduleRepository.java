@@ -5,9 +5,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.DayOfWeek;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Reads schedule exclusions from PostgreSQL.
@@ -22,6 +23,22 @@ public class ScheduleRepository {
 
     public ScheduleRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    /** Loads the normal opening window for the requested ISO weekday. */
+    public Optional<BookingModels.BusinessHours> findBusinessHours(DayOfWeek day) {
+        String sql = """
+                SELECT opens_at, closes_at
+                FROM business_hours
+                WHERE day_of_week = ?
+                """;
+
+        return jdbcTemplate.query(sql, (resultSet, rowNumber) -> new BookingModels.BusinessHours(
+                        resultSet.getTime("opens_at").toLocalTime(),
+                        resultSet.getTime("closes_at").toLocalTime()
+                ), day.getValue())
+                .stream()
+                .findFirst();
     }
 
     /** Returns blocked periods that intersect any time on the requested date. */
