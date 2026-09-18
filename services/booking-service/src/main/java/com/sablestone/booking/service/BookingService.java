@@ -2,13 +2,16 @@ package com.sablestone.booking.service;
 
 import com.sablestone.booking.domain.BookingModels;
 import com.sablestone.booking.domain.BookingRequests;
+import com.sablestone.booking.messaging.BookingCreatedEvent;
 import com.sablestone.booking.repository.BookingRepository;
 import com.sablestone.booking.repository.ScheduleRepository;
 import com.sablestone.booking.repository.ServiceRepository;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 /**
@@ -18,19 +21,21 @@ import java.time.LocalDateTime;
  * can become unavailable after the frontend has displayed it, so creation must
  * perform a final conflict check inside a database transaction.</p>
  */
-
 @Service
 public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final ServiceRepository serviceRepository;
     private final ScheduleRepository scheduleRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public BookingService(BookingRepository bookingRepository, ServiceRepository serviceRepository,
-                          ScheduleRepository scheduleRepository) {
+                          ScheduleRepository scheduleRepository,
+                          ApplicationEventPublisher eventPublisher) {
         this.bookingRepository = bookingRepository;
         this.serviceRepository = serviceRepository;
         this.scheduleRepository = scheduleRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     /**
@@ -46,7 +51,7 @@ public class BookingService {
 
         LocalDateTime start = LocalDateTime.of(request.preferredDate(), request.preferredTime());
         LocalDateTime end = start.plusMinutes(service.durationMinutes());
-        LocalDateTime occupiedEnd = end.plusMinutes(AvailabilityService.BUFFER_MINUTES);
+        LocalDateTime occupiedEnd = end.plusMinutes(com.sablestone.booking.service.AvailabilityService.BUFFER_MINUTES);
 
         validateBusinessSchedule(request, start, occupiedEnd);
 
@@ -58,8 +63,12 @@ public class BookingService {
         try {
             String reference = bookingRepository.insert(request, start, end, service.requiresApproval());
             String approval = service.requiresApproval() ? "PENDING_REVIEW" : "APPROVED";
-            return new BookingRequests.BookingResponse(reference, service.id(), request.preferredDate(),
+            BookingRequests.BookingResponse response = new BookingRequests.BookingResponse(
+                    reference, service.id(), request.preferredDate(),
                     request.preferredTime(), end.toLocalTime(), "PENDING", approval, "NOT_STARTED");
+            // The listener sends this to ActiveMQ only after this transaction commits.
+            eventPublisher.publishEvent(new BookingCreatedEvent(request, response, Instant.now()));
+            return response;
         } catch (DataIntegrityViolationException exception) {
             // A database constraint can still reject a race; expose a safe conflict response.
             throw new SlotUnavailableException(start, end);
@@ -109,4 +118,3 @@ public class BookingService {
         }
     }
 }
-
