@@ -2,11 +2,13 @@ package com.sablestone.booking.service;
 
 import com.sablestone.booking.domain.BookingModels;
 import com.sablestone.booking.domain.BookingRequests;
+import com.sablestone.booking.messaging.BookingCreatedEvent;
 import com.sablestone.booking.repository.BookingRepository;
 import com.sablestone.booking.repository.ScheduleRepository;
 import com.sablestone.booking.repository.ServiceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,8 +37,8 @@ class BookingServiceTest {
     private BookingRepository bookingRepository;
     private ServiceRepository serviceRepository;
     private ScheduleRepository scheduleRepository;
-    private BookingService bookingService;
-
+    private ApplicationEventPublisher eventPublisher;
+    private com.sablestone.booking.service.BookingService bookingService;
 
     @BeforeEach
     void setUp() {
@@ -44,10 +46,12 @@ class BookingServiceTest {
         bookingRepository = mock(BookingRepository.class);
         serviceRepository = mock(ServiceRepository.class);
         scheduleRepository = mock(ScheduleRepository.class);
+        eventPublisher = mock(ApplicationEventPublisher.class);
         when(scheduleRepository.findBusinessHours(any())).thenReturn(
                 Optional.of(new BookingModels.BusinessHours(LocalTime.of(8, 0), LocalTime.of(17, 0))));
         when(scheduleRepository.findBlockedPeriods(any())).thenReturn(List.of());
-        bookingService = new BookingService(bookingRepository, serviceRepository, scheduleRepository);
+        bookingService = new com.sablestone.booking.service.BookingService(
+                bookingRepository, serviceRepository, scheduleRepository, eventPublisher);
     }
 
     @Test
@@ -69,6 +73,7 @@ class BookingServiceTest {
         assertEquals("PENDING", response.bookingStatus());
         assertEquals("PENDING_REVIEW", response.approvalStatus());
         assertEquals("NOT_STARTED", response.paymentStatus());
+        verify(eventPublisher).publishEvent(any(BookingCreatedEvent.class));
 
         // The conflict check includes the 15-minute cleanup buffer: 16:15 is occupied.
         verify(bookingRepository).hasActiveOverlap(
@@ -113,7 +118,7 @@ class BookingServiceTest {
         when(bookingRepository.hasActiveOverlap(any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(true);
 
-        assertThrows(BookingService.SlotUnavailableException.class, () -> bookingService.create(request));
+        assertThrows(com.sablestone.booking.service.BookingService.SlotUnavailableException.class, () -> bookingService.create(request));
         verify(bookingRepository, never()).insert(any(), any(), any(), any(Boolean.class));
     }
 
@@ -124,7 +129,7 @@ class BookingServiceTest {
         BookingRequests.CreateBookingRequest request = requestFor("gel-overlay", LocalTime.of(16, 0));
         when(serviceRepository.findActiveById("gel-overlay")).thenReturn(Optional.of(service));
 
-        assertThrows(BookingService.ScheduleUnavailableException.class,
+        assertThrows(com.sablestone.booking.service.BookingService.ScheduleUnavailableException.class,
                 () -> bookingService.create(request));
         verify(bookingRepository, never()).hasActiveOverlap(any(), any());
     }
@@ -137,7 +142,7 @@ class BookingServiceTest {
         when(serviceRepository.findActiveById("gel-overlay")).thenReturn(Optional.of(service));
         when(scheduleRepository.findBusinessHours(any())).thenReturn(Optional.empty());
 
-        assertThrows(BookingService.ScheduleUnavailableException.class,
+        assertThrows(com.sablestone.booking.service.BookingService.ScheduleUnavailableException.class,
                 () -> bookingService.create(request));
         verify(bookingRepository, never()).hasActiveOverlap(any(), any());
     }
@@ -151,7 +156,7 @@ class BookingServiceTest {
         when(scheduleRepository.findBlockedPeriods(any())).thenReturn(List.of(
                 new BookingModels.TimePeriod(LocalTime.of(12, 30), LocalTime.of(13, 0), "Studio break")));
 
-        assertThrows(BookingService.ScheduleUnavailableException.class,
+        assertThrows(com.sablestone.booking.service.BookingService.ScheduleUnavailableException.class,
                 () -> bookingService.create(request));
         verify(bookingRepository, never()).hasActiveOverlap(any(), any());
     }
@@ -163,4 +168,3 @@ class BookingServiceTest {
                 LocalDate.of(2026, 10, 3), time, "Chrome finish", "website");
     }
 }
-
