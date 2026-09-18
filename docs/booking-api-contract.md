@@ -2,7 +2,7 @@
 
 ## Create a booking
 
-```
+```http
 POST /api/v1/bookings
 Content-Type: application/json
 ```
@@ -28,7 +28,7 @@ end-time or duration values are intentionally not accepted as authoritative.
 
 ### Successful response
 
-```
+```http
 200 OK
 ```
 
@@ -48,7 +48,7 @@ end-time or duration values are intentionally not accepted as authoritative.
 ## Validation and conflict behaviour
 
 | Situation | Response |
-| --- | --- |
+|---|---:|
 | Missing required client or slot field | `400 Bad Request` |
 | Unknown or inactive service | `400 Bad Request` |
 | Slot overlaps an active booking | `409 Conflict` |

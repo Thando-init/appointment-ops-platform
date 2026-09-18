@@ -16,6 +16,7 @@ import java.util.Optional;
  * <p>Only records that overlap the requested date are loaded. Keeping this
  * filtering in SQL avoids pulling the entire booking history into memory.</p>
  */
+
 @Repository
 public class ScheduleRepository {
 
@@ -81,3 +82,4 @@ public class ScheduleRepository {
         ), date, date);
     }
 }
+

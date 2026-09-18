@@ -8,20 +8,20 @@ The booking page must display only slots that can fit the selected service durat
 
 ## Service-aware availability request
 
-```
+```http
 GET /api/v1/availability/slots?serviceId=gel-overlay-art&date=2026-10-03
 ```
 
 ### Query parameters
 
 | Parameter | Type | Required | Description |
-| --- | --- | --- | --- |
+|---|---|---:|---|
 | `serviceId` | string | Yes | Stable service identifier from the catalogue |
 | `date` | string | Yes | Date in `YYYY-MM-DD` format |
 
 ## Successful availability response
 
-```
+```http
 200 OK
 ```
 
@@ -49,18 +49,15 @@ GET /api/v1/availability/slots?serviceId=gel-overlay-art&date=2026-10-03
 The backend should exclude:
 
 - Existing confirmed bookings.
-
 - Active temporary holds.
-
 - Blocked periods such as breaks or leave.
-
 - Slots that cannot fit the appointment plus its buffer before closing time.
 
 ## No available slots
 
 A date with no suitable slots is still a successful lookup.
 
-```
+```http
 200 OK
 ```
 
@@ -76,7 +73,7 @@ A date with no suitable slots is still a successful lookup.
 
 ## Availability service error
 
-```
+```http
 503 Service Unavailable
 ```
 
@@ -116,7 +113,7 @@ The server must recalculate or recheck the selected slot before creating a booki
 
 If the slot was taken after the availability lookup:
 
-```
+```http
 409 Conflict
 ```
 
@@ -135,7 +132,7 @@ The frontend should refresh availability and ask the client to choose another di
 
 A later version can reserve a selected slot while the client completes payment.
 
-```
+```http
 POST /api/v1/bookings/{bookingId}/hold
 ```
 

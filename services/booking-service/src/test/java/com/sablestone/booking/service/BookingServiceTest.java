@@ -37,6 +37,7 @@ class BookingServiceTest {
     private ScheduleRepository scheduleRepository;
     private BookingService bookingService;
 
+
     @BeforeEach
     void setUp() {
         // Each test receives fresh mocks, preventing state from leaking between scenarios.
@@ -162,3 +163,4 @@ class BookingServiceTest {
                 LocalDate.of(2026, 10, 3), time, "Chrome finish", "website");
     }
 }
+

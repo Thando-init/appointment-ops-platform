@@ -12,6 +12,7 @@ import java.util.List;
  * As the database layer grows, they can be split into one domain type per file
  * without changing the concepts represented here.</p>
  */
+
 public final class BookingModels {
 
     private BookingModels() {
@@ -52,3 +53,4 @@ public final class BookingModels {
             List<AvailabilitySlot> slots
     ) {}
 }
+

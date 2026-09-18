@@ -21,7 +21,10 @@ const notes = document.querySelector("#notes");
 const notesCount = document.querySelector("#notes-count");
 
 // ---------- Runtime configuration ----------
-// Leave empty for demo mode. Replace this with the backend/n8n endpoint later.
+// The Java API serves availability and booking creation locally.
+const AVAILABILITY_API_BASE_URL = "http://localhost:8080";
+// Keep this empty while the backend owns booking creation. n8n can be enabled
+// later when the automation workflow is ready to receive booking references.
 const N8N_WEBHOOK_URL = "";
 let selectedSlot = null;
 
@@ -87,11 +90,15 @@ async function loadAvailability() {
 
   try {
     let slots;
-    if (N8N_WEBHOOK_URL) {
+    if (AVAILABILITY_API_BASE_URL) {
       const params = new URLSearchParams({ serviceId: serviceId.value, date: preferredDate.value });
-      const response = await fetch(`${N8N_WEBHOOK_URL}/availability/slots?${params}`);
+      const response = await fetch(`${AVAILABILITY_API_BASE_URL}/api/v1/availability/slots?${params}`);
       if (!response.ok) throw new Error("Availability could not be loaded.");
-      slots = (await response.json()).slots;
+      slots = (await response.json()).slots.map((slot) => ({
+        // The backend returns LocalDateTime values; the select needs HH:mm only.
+        start: slot.start.includes("T") ? slot.start.split("T")[1].slice(0, 5) : slot.start,
+        end: slot.end.includes("T") ? slot.end.split("T")[1].slice(0, 5) : slot.end,
+      }));
     } else {
       await new Promise((resolve) => setTimeout(resolve, 300));
       slots = calculateDemoSlots(preferredDate.value, Number(durationMinutes.value));
@@ -152,10 +159,20 @@ function validateForm() {
   return valid;
 }
 
-// The backend must repeat this availability check before creating a real booking.
+// Only fields accepted by POST /api/v1/bookings are sent as authoritative data.
+// The backend still looks up the service duration and calculates the end time.
 function getPayload() {
   const data = new FormData(form);
-  return { clientName: data.get("clientName").trim(), phone: data.get("phone").trim(), email: data.get("email") || null, serviceId: data.get("serviceId"), serviceRequested: data.get("serviceRequested"), durationMinutes: Number(data.get("durationMinutes")), quotedAmount: Number(data.get("quotedAmount")), requiresApproval: data.get("requiresApproval") === "true", preferredDate: data.get("preferredDate"), preferredTime: data.get("preferredTime"), selectedStart: `${data.get("preferredDate")}T${data.get("preferredTime")}:00+02:00`, selectedEnd: `${data.get("preferredDate")}T${selectedSlot.end}:00+02:00`, notes: data.get("notes") || null, source: "website" };
+  return {
+    clientName: data.get("clientName").trim(),
+    phone: data.get("phone").trim(),
+    email: data.get("email") || null,
+    serviceId: data.get("serviceId"),
+    preferredDate: data.get("preferredDate"),
+    preferredTime: data.get("preferredTime"),
+    notes: data.get("notes") || null,
+    source: "website",
+  };
 }
 
 form.addEventListener("submit", async (event) => {
@@ -164,11 +181,21 @@ form.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
   formStatus.textContent = "Sending your request…";
   try {
-    if (N8N_WEBHOOK_URL) {
-      const response = await fetch(N8N_WEBHOOK_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(getPayload()) });
+    const bookingEndpoint = N8N_WEBHOOK_URL || `${AVAILABILITY_API_BASE_URL}/api/v1/bookings`;
+    if (bookingEndpoint) {
+      const response = await fetch(bookingEndpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(getPayload()),
+      });
       if (response.status === 409) throw new Error("That slot was just taken. Please choose another time.");
+      if (response.status === 400) throw new Error("Please check the date, time, and contact details.");
       if (!response.ok) throw new Error("The booking request could not be submitted.");
+      const booking = await response.json();
+      // Show the server-generated reference so the client can quote it later.
+      successState.querySelector("p:last-of-type").textContent = `Reference ${booking.bookingReference}. Your request has been sent to the studio for review.`;
     } else {
+      // This branch is useful when the static form is demonstrated without an API.
       await new Promise((resolve) => setTimeout(resolve, 650));
     }
     form.querySelectorAll(".field, .availability-note, .form-actions, .form-status").forEach((element) => { element.hidden = true; });

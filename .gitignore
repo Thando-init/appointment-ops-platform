@@ -1,0 +1,34 @@
+# ---------- Secrets and local environment ----------
+# Keep real credentials out of Git. Commit only .env.example.
+.env
+.env.*
+!.env.example
+
+# ---------- Java and Maven build output ----------
+# Maven recreates these files locally during builds.
+target/
+*.class
+*.jar
+*.war
+
+# ---------- IDE settings ----------
+# These are machine-specific editor settings.
+.idea/
+*.iml
+.vscode/
+
+# ---------- Operating-system files ----------
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ---------- Logs and temporary files ----------
+*.log
+*.tmp
+*.swp
+
+# ---------- Frontend generated output ----------
+# Keep source files; do not commit generated bundles.
+node_modules/
+dist/
+build/

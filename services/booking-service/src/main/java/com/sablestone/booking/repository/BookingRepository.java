@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /** Persists booking requests and performs the final overlap check. */
+
 @Repository
 public class BookingRepository {
 
@@ -56,3 +57,4 @@ public class BookingRepository {
         return reference;
     }
 }
+

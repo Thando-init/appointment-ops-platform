@@ -1,0 +1,19 @@
+{
+  "eventType": "booking.created",
+  "eventId": "evt_demo_001",
+  "occurredAt": "2026-10-03T12:00:00+02:00",
+  "bookingReference": "SALON-AB12CD34",
+  "bookingStatus": "PENDING",
+  "approvalStatus": "PENDING_REVIEW",
+  "paymentStatus": "NOT_STARTED",
+  "client": {
+    "name": "Amina Patel",
+    "phone": "+27821234567",
+    "email": "amina@example.com"
+  },
+  "appointment": {
+    "serviceId": "gel-overlay-art",
+    "startsAt": "2026-10-03T14:00:00+02:00",
+    "endsAt": "2026-10-03T16:00:00+02:00"
+  }
+}

@@ -9,10 +9,11 @@ import java.util.Optional;
 /**
  * Reads active catalogue services from PostgreSQL.
  *
- * The repository owns SQL and row mapping. It does not calculate slots or
+ * <p>The repository owns SQL and row mapping. It does not calculate slots or
  * decide whether a service requires approval; those responsibilities remain in
- * the service layer.
+ * the service layer.</p>
  */
+
 @Repository
 public class ServiceRepository {
 
@@ -42,3 +43,4 @@ public class ServiceRepository {
                 .findFirst();
     }
 }
+

@@ -34,6 +34,7 @@ import java.util.Map;
  * replace them with repositories without changing this public calculation
  * contract.</p>
  */
+
 @Service
 public class AvailabilityService {
 
@@ -189,3 +190,4 @@ public class AvailabilityService {
         return new BookingModels.AvailabilityResponse(service.id(), date, service.durationMinutes(), BUFFER_MINUTES, slots);
     }
 }
+

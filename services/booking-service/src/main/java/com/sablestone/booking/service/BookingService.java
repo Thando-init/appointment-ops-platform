@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
  * can become unavailable after the frontend has displayed it, so creation must
  * perform a final conflict check inside a database transaction.</p>
  */
+
 @Service
 public class BookingService {
 
@@ -108,3 +109,4 @@ public class BookingService {
         }
     }
 }
+

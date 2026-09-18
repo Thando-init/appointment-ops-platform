@@ -8,11 +8,14 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+
+/** Documents the expected scheduling behaviour before database repositories are introduced. */
 class AvailabilityServiceTest {
 
     private final AvailabilityService availabilityService = new AvailabilityService();
 
     @Test
+    /** An ordinary open date should return service-duration-aware slots. */
     void returnsSlotsForAnOpenDate() {
         BookingModels.AvailabilityResponse response = availabilityService.getSlots(
                 "gel-overlay-art",
@@ -26,6 +29,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    /** Blocked periods remove candidates whose service or cleanup buffer overlaps them. */
     void excludesBlockedPeriodsAndKeepsFullAppointmentWithinHours() {
         BookingModels.AvailabilityResponse response = availabilityService.getSlots(
                 "gel-overlay-art",
@@ -38,6 +42,7 @@ class AvailabilityServiceTest {
     }
 
     @Test
+    /** Closed weekdays are successful lookups with no bookable start times. */
     void returnsNoSlotsOnClosedDays() {
         BookingModels.AvailabilityResponse response = availabilityService.getSlots(
                 "gel-overlay",

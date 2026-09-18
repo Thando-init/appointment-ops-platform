@@ -14,6 +14,7 @@ import java.time.LocalTime;
  * the appointment end time from the trusted service duration instead of
  * trusting a client-supplied duration or end time.</p>
  */
+
 public final class BookingRequests {
 
     private BookingRequests() {
@@ -44,3 +45,4 @@ public final class BookingRequests {
             String paymentStatus
     ) {}
 }
+
