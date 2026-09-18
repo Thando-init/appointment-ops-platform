@@ -45,6 +45,30 @@ n8n sends the final confirmation to the client
 
 The first version will use the website. I can add WhatsApp after the website-to-API-to-n8n journey is working.
 
+## Where JMS and ActiveMQ now fit
+
+The Java project now includes a first JMS message path:
+
+```
+Spring Boot saves the booking
+        ↓ after the transaction commits
+ActiveMQ queue: booking.created
+        ↓
+Java JMS consumer reads the JSON message
+        ↓ next implementation step
+Consumer calls the n8n webhook
+```
+
+The current consumer logs the booking reference. This proves the API-to-broker-to-consumer path before I add a real HTTP request to n8n. The database is still the source of truth, and n8n remains responsible for external actions.
+
+I can start the broker from the project root with:
+
+```bash
+docker compose up -d postgres activemq
+```
+
+The ActiveMQ development console is available at `http://localhost:8161`. The local credentials are documented in `.env.example` and must be changed before any public deployment.
+
 ## The pattern I am using first
 
 I am starting with **Pattern A: the API calls n8n after the booking has been saved**.
@@ -280,11 +304,11 @@ Publisher:
 
 This prevents the gap where the database save succeeds but the application crashes before the n8n request is made.
 
-I will first make the direct webhook version work, then implement the outbox so I can understand why production systems use it.
+I am first proving the JMS message path. The next step is for the JMS consumer to call the n8n webhook. After that, I plan to implement the outbox so I can understand why production systems use it.
 
-## Possible JMS and ActiveMQ extension
+## JMS and ActiveMQ learning extension
 
-I also want this project to practise the Java and messaging skills from WeThinkCode. After the HTTP webhook version is understandable, I can add an alternative event path:
+I am using this project to practise the Java and messaging skills from WeThinkCode. The implemented event path is:
 
 ```
 Spring Boot saves booking
@@ -298,7 +322,7 @@ Consumer calls n8n or another automation service
 
 The database remains the source of truth. ActiveMQ provides reliable message delivery, while n8n remains useful for business integrations.
 
-I will not add ActiveMQ before the basic HTTP flow works. Adding too many moving pieces at once would make it harder for me to learn and troubleshoot.
+I am keeping the consumer simple for now. Adding the n8n HTTP request is the next small step, followed by retries, idempotency, and a dead-letter queue.
 
 ## What makes this a real product rather than only a demo
 

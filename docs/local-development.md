@@ -10,7 +10,7 @@ I need Java 21, Maven, Docker Compose, Python 3, and Git.
 
 ### PowerShell
 
-```powershell
+```
 java -version
 mvn -version
 docker --version
@@ -36,7 +36,7 @@ I run this from the repository root.
 
 ### PowerShell
 
-```powershell
+```
 Copy-Item .env.example .env
 ```
 
@@ -55,16 +55,22 @@ Docker runs PostgreSQL for me so I do not need to install PostgreSQL directly on
 ### PowerShell, Linux, or macOS
 
 ```bash
-docker compose up -d postgres
+docker compose up -d postgres activemq
 docker compose ps
 ```
 
-The database is exposed at `localhost:5432`. The container should be running or healthy.
+The database is exposed at `localhost:5432`. ActiveMQ listens for JMS connections on `localhost:61616` and exposes its local web console at `http://localhost:8161`. Both containers should be running.
 
 If I have GNU Make installed, I can use:
 
 ```bash
 make db-up
+```
+
+The `make db-up` target starts PostgreSQL. If I also want ActiveMQ, I run:
+
+```bash
+docker compose up -d postgres activemq
 ```
 
 ## 4. Start the booking API
@@ -73,7 +79,7 @@ The API runs on port `8080`.
 
 ### PowerShell
 
-```powershell
+```
 Set-Location services/booking-service
 mvn clean test
 mvn spring-boot:run
@@ -97,16 +103,20 @@ make api
 
 On first startup, Flyway reads the migration files under:
 
-```text
+```
 services/booking-service/src/main/resources/db/migration/
 ```
 
 The first migration creates:
 
 - `services`
+
 - `business_hours`
+
 - `blocked_periods`
+
 - `bookings`
+
 - `booking_holds`
 
 It also seeds the service catalogue and the opening hours used by the prototype.
@@ -117,7 +127,7 @@ I open another terminal while Spring Boot is running.
 
 ### PowerShell
 
-```powershell
+```
 Invoke-RestMethod http://localhost:8080/api/v1/health
 Invoke-RestMethod "http://localhost:8080/api/v1/availability/slots?serviceId=gel-overlay-art&date=2026-10-03"
 ```
@@ -137,7 +147,7 @@ The frontend runs on port `8000`. I serve it through HTTP instead of double-clic
 
 ### PowerShell
 
-```powershell
+```
 Set-Location apps/booking-form
 py -m http.server 8000
 ```
@@ -151,7 +161,7 @@ python3 -m http.server 8000
 
 Then I open:
 
-```text
+```
 http://localhost:8000
 ```
 
@@ -185,7 +195,7 @@ The API must already be running on port `8080`.
 
 PowerShell:
 
-```powershell
+```
 python tests/acceptance/test_api.py
 ```
 
@@ -205,7 +215,7 @@ make api-test
 
 To stop only the frontend or API, I press `Ctrl+C` in the terminal running it.
 
-To stop PostgreSQL while keeping the named database volume:
+To stop PostgreSQL and ActiveMQ while keeping their named volumes:
 
 ```bash
 docker compose down
@@ -219,7 +229,7 @@ make db-down
 
 The database volume is retained, so local data survives a normal stop.
 
-## 9. Reset the local database
+## 9. Reset the local development infrastructure
 
 If Flyway reports a migration checksum mismatch, or if I want to start with an empty local database, I can remove the Docker volume.
 
@@ -229,7 +239,7 @@ PowerShell, Linux, or macOS:
 
 ```bash
 docker compose down -v
-docker compose up -d postgres
+docker compose up -d postgres activemq
 ```
 
 With Make:
@@ -237,6 +247,8 @@ With Make:
 ```bash
 make db-reset
 ```
+
+The reset target recreates both the PostgreSQL and ActiveMQ development volumes.
 
 ## 10. Useful Make commands
 
@@ -262,7 +274,7 @@ The Makefile is mainly for Linux, macOS, Git Bash, and WSL. On Windows PowerShel
 
 I check these in order:
 
-```text
+```
 1. PostgreSQL is running.
 2. Spring Boot started successfully.
 3. http://localhost:8080/api/v1/health works.

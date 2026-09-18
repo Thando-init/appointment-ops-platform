@@ -46,9 +46,9 @@ At the moment, I can:
 
 - Import a starter n8n workflow for the next automation stage.
 
-The frontend and API can work without n8n. n8n is added for the actions around a booking, such as notifications, payment-link creation, and calendar updates.
+The frontend and API can work without n8n. n8n will be added for the actions around a booking, such as notifications, payment-link creation, and calendar updates.
 
-## What the finished product does
+## What the finished product should do
 
 The longer-term workflow is:
 
@@ -387,13 +387,14 @@ I am using the following boundary:
 ```
 1. API validates the booking.
 2. API saves the booking in PostgreSQL.
-3. API sends a booking.created event to n8n.
-4. n8n performs outside actions.
+3. API publishes a `booking.created` message to ActiveMQ after the database transaction commits.
+4. A Java JMS consumer receives the message.
+5. The consumer will call n8n for outside actions.
 ```
 
 This is called **Pattern A**. It is the right first version for this project because the database remains the source of truth. If n8n is temporarily unavailable, the booking should still be saved rather than disappearing.
 
-The first n8n workflow will validate the event and acknowledge it. I will add WhatsApp, payment, and calendar integrations only after that simple flow works.
+The first JMS consumer logs the event so I can prove the message path works. The next step is to make that consumer call the n8n webhook. I will add WhatsApp, payment, and calendar integrations only after that simple flow works.
 
 For a more production-ready version, I plan to add a transactional outbox. That means the API saves the booking and an outgoing event in the same database transaction. A publisher can retry delivery to n8n if the first request fails.
 
@@ -447,7 +448,83 @@ I am following this order so I understand each layer instead of hiding problems 
 
 1. Improve the delivery mechanism with an outbox and retries.
 
-1. Add JMS and ActiveMQ as a second event-driven implementation for learning.
+1. Add JMS and ActiveMQ as the reliable message path between the API and n8n.
+
+## JMS and ActiveMQ
+
+ActiveMQ is now part of the local project. It provides a queue called `booking.created`.
+
+```
+Booking API
+    ↓ after database commit
+ActiveMQ queue: booking.created
+    ↓
+Java JMS consumer
+    ↓ next step
+n8n webhook
+```
+
+The API publishes a JSON message only after the booking transaction commits. The current consumer reads and logs the message. It does not call a real n8n webhook yet, which keeps the first messaging step easy to test.
+
+Start PostgreSQL and ActiveMQ from the project root:
+
+```bash
+docker compose up -d postgres activemq
+docker compose ps
+```
+
+The ActiveMQ web console is available locally at `http://localhost:8161` with the default development credentials from `.env.example`.
+
+Start the API after ActiveMQ is running:
+
+PowerShell:
+
+```
+Set-Location services/booking-service
+mvn spring-boot:run
+```
+
+Linux or macOS:
+
+```bash
+cd services/booking-service
+mvn spring-boot:run
+```
+
+Or, from the repository root:
+
+```bash
+make api
+```
+
+When I submit a booking, I should see a log message similar to:
+
+```
+Received booking.created event for booking SALON-AB12CD34
+```
+
+The queue settings can be changed through `.env`:
+
+```
+ARTEMIS_USER=admin
+ARTEMIS_PASSWORD=admin
+ARTEMIS_BROKER_URL=tcp://localhost:61616
+BOOKING_CREATED_QUEUE=booking.created
+```
+
+To stop both local infrastructure services without deleting their data:
+
+```bash
+docker compose down
+```
+
+To reset both local volumes, including bookings and messages:
+
+```bash
+docker compose down -v
+```
+
+That reset command deletes local development data, so I only use it intentionally.
 
 ## Git checkpoint
 

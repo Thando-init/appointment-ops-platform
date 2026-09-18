@@ -38,7 +38,7 @@ api-test:
 
 # Start PostgreSQL in the background.
 db-up:
-	docker compose up -d postgres
+	docker compose up -d postgres activemq
 
 # Stop PostgreSQL without deleting the named volume.
 db-down:
@@ -48,7 +48,7 @@ db-down:
 # This is useful when Flyway reports a migration checksum mismatch.
 db-reset:
 	docker compose down -v
-	docker compose up -d postgres
+	docker compose up -d postgres activemq
 
 # Start Spring Boot. Keep this terminal open while testing the frontend.
 api:
