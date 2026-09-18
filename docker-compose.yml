@@ -22,5 +22,23 @@ services:
       timeout: 5s
       retries: 10
 
+  # ActiveMQ Artemis carries booking events between Java components.
+  # The API publishes booking.created messages after the booking transaction
+  # commits, and a JMS listener consumes them before calling n8n later.
+  activemq:
+    image: apache/activemq-artemis:latest-alpine
+    container_name: appointment-ops-activemq
+    restart: unless-stopped
+    environment:
+      ARTEMIS_USER: ${ARTEMIS_USER:-admin}
+      ARTEMIS_PASSWORD: ${ARTEMIS_PASSWORD:-admin}
+      ANONYMOUS_LOGIN: "false"
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    volumes:
+      - appointment_ops_activemq_data:/var/lib/artemis-instance
+
 volumes:
   appointment_ops_postgres_data:
+  appointment_ops_activemq_data:
