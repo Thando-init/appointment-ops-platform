@@ -39,6 +39,28 @@ services:
     volumes:
       - appointment_ops_activemq_data:/var/lib/artemis-instance
 
+  # n8n runs the workflow automation around persisted bookings.
+  # Its own data volume keeps local workflows and the owner account after
+  # the container is stopped and started again.
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: appointment-ops-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE:-false}
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-Africa/Johannesburg}
+      TZ: ${TZ:-Africa/Johannesburg}
+      # This hostname lets a container reach services running on the host.
+      # It will be useful when the JMS consumer or n8n calls localhost:8080.
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: ${N8N_PORT:-5678}
+      N8N_PROTOCOL: ${N8N_PROTOCOL:-http}
+    volumes:
+      - appointment_ops_n8n_data:/home/node/.n8n
+
 volumes:
   appointment_ops_postgres_data:
   appointment_ops_activemq_data:
+  appointment_ops_n8n_data:
