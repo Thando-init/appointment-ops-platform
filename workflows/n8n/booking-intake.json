@@ -17,44 +17,56 @@
     },
     {
       "parameters": {
-        "conditions": {
-          "string": [
-            {
-              "value1": "={{$json.eventType}}",
-              "operation": "equals",
-              "value2": "booking.created"
+        "options": {
+          "caseSensitive": true,
+          "leftValue": "",
+          "typeValidation": "strict",
+          "version": 2
+        },
+        "conditions": [
+          {
+            "id": "booking-event-type-condition",
+            "leftValue": "={{ ($json.body ?? $json).eventType }}",
+            "rightValue": "booking.created",
+            "operator": {
+              "type": "string",
+              "operation": "equals"
             }
-          ],
-          "boolean": [
-            {
-              "value1": "={{!!$json.bookingReference}}",
-              "operation": "isTrue"
+          },
+          {
+            "id": "booking-reference-condition",
+            "leftValue": "={{ ($json.body ?? $json).bookingReference }}",
+            "rightValue": "",
+            "operator": {
+              "type": "string",
+              "operation": "notEmpty"
             }
-          ]
-        }
+          }
+        ],
+        "combinator": "and"
       },
       "id": "validate-event",
       "name": "Validate Booking Event",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
+      "typeVersion": 2.2,
       "position": [480, 300]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\"accepted\":true,\"bookingReference\":$json.bookingReference}",
+        "responseBody": "={{ { accepted: true, bookingReference: ($json.body ?? $json).bookingReference } }}",
         "options": {}
       },
       "id": "accepted-response",
       "name": "Acknowledge Event",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 1.1,
       "position": [760, 220]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={\"accepted\":false,\"reason\":\"Invalid booking event\"}",
+        "responseBody": "={{ { accepted: false, reason: 'Invalid booking event' } }}",
         "options": {
           "responseCode": 400
         }
@@ -62,24 +74,44 @@
       "id": "rejected-response",
       "name": "Reject Invalid Event",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
+      "typeVersion": 1.1,
       "position": [760, 400]
     }
   ],
   "connections": {
     "Booking Created Webhook": {
-      "main": [[{"node": "Validate Booking Event", "type": "main", "index": 0}]]
+      "main": [
+        [
+          {
+            "node": "Validate Booking Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Validate Booking Event": {
       "main": [
-        [{"node": "Acknowledge Event", "type": "main", "index": 0}],
-        [{"node": "Reject Invalid Event", "type": "main", "index": 0}]
+        [
+          {
+            "node": "Acknowledge Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invalid Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     }
   },
   "active": false,
   "settings": {},
-  "versionId": "appointment-ops-starter-v1",
+  "versionId": "appointment-ops-starter-v4",
   "meta": {
     "templateCredsSetupCompleted": false
   },
