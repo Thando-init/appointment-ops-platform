@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * Coordinates booking validation and persistence.
@@ -72,6 +73,45 @@ public class BookingService {
         } catch (DataIntegrityViolationException exception) {
             // A database constraint can still reject a race; expose a safe conflict response.
             throw new SlotUnavailableException(start, end);
+        }
+    }
+
+    /** Returns the persisted booking state for trusted automation consumers. */
+    @Transactional(readOnly = true)
+    public Optional<BookingRequests.BookingDetails> findByReference(String bookingReference) {
+        return bookingRepository.findByReference(bookingReference);
+    }
+
+    /** Demo-safe lifecycle transition used by the local n8n workflow. */
+    @Transactional
+    public BookingRequests.BookingDetails updateApproval(String bookingReference, String approvalStatus) {
+        if (!approvalStatus.equals("APPROVED") && !approvalStatus.equals("REJECTED")) {
+            throw new IllegalArgumentException("approvalStatus must be APPROVED or REJECTED");
+        }
+        bookingRepository.updateApproval(bookingReference, approvalStatus);
+        return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
+    }
+
+    /** Demo-safe payment result transition; a real adapter would verify with the provider. */
+    @Transactional
+    public BookingRequests.BookingDetails updatePayment(String bookingReference, String paymentStatus) {
+        if (!paymentStatus.equals("PAID") && !paymentStatus.equals("FAILED")) {
+            throw new IllegalArgumentException("paymentStatus must be PAID or FAILED");
+        }
+        bookingRepository.updatePayment(bookingReference, paymentStatus);
+        return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
+    }
+
+    /** Demo-safe calendar confirmation transition. */
+    @Transactional
+    public BookingRequests.BookingDetails confirmCalendar(String bookingReference) {
+        bookingRepository.updateBookingStatus(bookingReference, "CONFIRMED");
+        return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
+    }
+
+    public static class BookingNotFoundException extends RuntimeException {
+        public BookingNotFoundException(String bookingReference) {
+            super("Booking not found: " + bookingReference);
         }
     }
 

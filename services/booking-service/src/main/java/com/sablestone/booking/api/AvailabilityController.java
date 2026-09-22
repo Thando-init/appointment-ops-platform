@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -94,7 +95,65 @@ public class AvailabilityController {
         }
     }
 
+    /** Returns current persisted state for the n8n authoritative-read step. */
+    @GetMapping("/bookings/{bookingReference}")
+    public BookingRequests.BookingDetails getBooking(
+            @PathVariable String bookingReference
+    ) {
+        return bookingService.findByReference(bookingReference)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Booking not found: " + bookingReference));
+    }
+
+    /** Demo adapter endpoint for the owner approval step in n8n. */
+    @PostMapping("/bookings/{bookingReference}/approval")
+    public BookingRequests.BookingDetails updateApproval(
+            @PathVariable String bookingReference,
+            @RequestBody BookingRequests.ApprovalRequest request
+    ) {
+        try {
+            return bookingService.updateApproval(bookingReference, request.approvalStatus());
+        } catch (BookingService.BookingNotFoundException | IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+        }
+    }
+
+    /** Demo adapter endpoint for payment-provider confirmation. */
+    @PostMapping("/bookings/{bookingReference}/payment-confirmation")
+    public BookingRequests.BookingDetails confirmPayment(
+            @PathVariable String bookingReference,
+            @RequestBody BookingRequests.PaymentConfirmationRequest request
+    ) {
+        try {
+            return bookingService.updatePayment(bookingReference, request.paymentStatus());
+        } catch (BookingService.BookingNotFoundException | IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+        }
+    }
+
+    /** Returns a deterministic fake payment link for local demos and screenshots. */
+    @PostMapping("/bookings/{bookingReference}/payment-link")
+    public BookingRequests.PaymentLinkResponse createPaymentLink(@PathVariable String bookingReference) {
+        bookingService.findByReference(bookingReference)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Booking not found: " + bookingReference));
+        return new BookingRequests.PaymentLinkResponse(
+                bookingReference,
+                "demo-pay-" + bookingReference,
+                "http://localhost:8080/demo-payment/" + bookingReference,
+                "demo");
+    }
+
+    /** Demo adapter endpoint representing successful calendar event creation. */
+    @PostMapping("/bookings/{bookingReference}/calendar-confirmation")
+    public BookingRequests.BookingDetails confirmCalendar(@PathVariable String bookingReference) {
+        try {
+            return bookingService.confirmCalendar(bookingReference);
+        } catch (BookingService.BookingNotFoundException | IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+        }
+    }
+
     /** Stable response shape for health checks. */
     public record HealthResponse(String status, String service) {}
 }
-

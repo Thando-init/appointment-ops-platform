@@ -44,5 +44,25 @@ public final class BookingRequests {
             String approvalStatus,
             String paymentStatus
     ) {}
-}
 
+    /** Full persisted booking data returned to trusted workflow consumers. */
+    public record BookingDetails(
+            String bookingReference,
+            String serviceId,
+            String clientName,
+            String phone,
+            String email,
+            LocalDate date,
+            LocalTime start,
+            LocalTime end,
+            String bookingStatus,
+            String approvalStatus,
+            String paymentStatus,
+            String source,
+            String notes
+    ) {}
+
+    public record ApprovalRequest(String approvalStatus) {}
+    public record PaymentConfirmationRequest(String paymentStatus) {}
+    public record PaymentLinkResponse(String bookingReference, String paymentReference, String paymentUrl, String mode) {}
+}

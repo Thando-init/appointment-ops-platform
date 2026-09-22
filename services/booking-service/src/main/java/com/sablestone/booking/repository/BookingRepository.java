@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Persists booking requests and performs the final overlap check. */
@@ -56,5 +57,57 @@ public class BookingRepository {
                 request.notes());
         return reference;
     }
-}
 
+    /** Reads the authoritative persisted booking used by n8n before side effects. */
+    public Optional<BookingRequests.BookingDetails> findByReference(String bookingReference) {
+        String sql = """
+                SELECT booking_reference, service_id, client_name, phone, email,
+                       starts_at, ends_at, booking_status, approval_status,
+                       payment_status, source, notes
+                FROM bookings
+                WHERE booking_reference = ?
+                """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new BookingRequests.BookingDetails(
+                rs.getString("booking_reference"),
+                rs.getString("service_id"),
+                rs.getString("client_name"),
+                rs.getString("phone"),
+                rs.getString("email"),
+                rs.getTimestamp("starts_at").toLocalDateTime().toLocalDate(),
+                rs.getTimestamp("starts_at").toLocalDateTime().toLocalTime(),
+                rs.getTimestamp("ends_at").toLocalDateTime().toLocalTime(),
+                rs.getString("booking_status"),
+                rs.getString("approval_status"),
+                rs.getString("payment_status"),
+                rs.getString("source"),
+                rs.getString("notes")
+        ), bookingReference).stream().findFirst();
+    }
+
+    public void updateApproval(String bookingReference, String approvalStatus) {
+        int updated = jdbcTemplate.update(
+                "UPDATE bookings SET approval_status = ?, updated_at = CURRENT_TIMESTAMP WHERE booking_reference = ?",
+                approvalStatus, bookingReference);
+        requireUpdated(updated, bookingReference);
+    }
+
+    public void updatePayment(String bookingReference, String paymentStatus) {
+        int updated = jdbcTemplate.update(
+                "UPDATE bookings SET payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE booking_reference = ?",
+                paymentStatus, bookingReference);
+        requireUpdated(updated, bookingReference);
+    }
+
+    public void updateBookingStatus(String bookingReference, String bookingStatus) {
+        int updated = jdbcTemplate.update(
+                "UPDATE bookings SET booking_status = ?, updated_at = CURRENT_TIMESTAMP WHERE booking_reference = ?",
+                bookingStatus, bookingReference);
+        requireUpdated(updated, bookingReference);
+    }
+
+    private void requireUpdated(int updated, String bookingReference) {
+        if (updated == 0) {
+            throw new IllegalArgumentException("Booking not found: " + bookingReference);
+        }
+    }
+}
