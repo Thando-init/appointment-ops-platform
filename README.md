@@ -274,6 +274,23 @@ http://localhost:8000
 
 I must not double-click `index.html`, because the browser will then use a `file://` URL. The frontend is meant to run through the local HTTP server.
 
+### Start n8n
+
+In another terminal from the repository root, run:
+
+```bash
+docker compose up -d n8n
+```
+
+Open the n8n editor at `http://localhost:5678`. Import the canonical workflow from `workflows/n8n/booking-intake.json`, then click **Execute workflow** on the canvas before sending a test webhook request. For an active workflow, use the production URL instead of the test URL:
+
+```
+Test:       http://localhost:5678/webhook-test/booking-created
+Production: http://localhost:5678/webhook/booking-created
+```
+
+The n8n HTTP Request node uses `host.docker.internal` to reach the Spring Boot API running on the Windows host at port `8080`.
+
 On Linux or macOS, I run the equivalent commands like this:
 
 ```bash
@@ -532,7 +549,7 @@ When I have tested a meaningful change, I can save it with:
 
 ```
 git add .
-git commit -m "feat(booking ): improve appointment workflow"
+git commit -m "feat(booking  ): improve appointment workflow"
 git status
 ```
 

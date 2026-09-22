@@ -173,6 +173,65 @@ make frontend
 
 ## 7. Run the tests
 
+## 7A. Start n8n for the automation demo
+
+From the repository root, start the local n8n container:
+
+```bash
+docker compose up -d n8n
+docker compose ps
+```
+
+Open n8n at `http://localhost:5678`, import `workflows/n8n/booking-intake.json`, and use the Webhook node's **Execute workflow** button before sending a test request. The test URL is:
+
+```
+http://localhost:5678/webhook-test/booking-created
+```
+
+For a persistent demo, activate the workflow and use:
+
+```
+http://localhost:5678/webhook/booking-created
+```
+
+The n8n HTTP Request node reaches an API running on the Windows host through `host.docker.internal:8080`.
+
+## 7B. Quick-start sequence
+
+Use four terminals from the repository root:
+
+```bash
+# Terminal 1 — database and broker
+docker compose up -d postgres activemq n8n
+
+# Terminal 2 — Spring Boot API
+cd services/booking-service
+mvn spring-boot:run
+
+# Terminal 3 — booking website
+cd apps/booking-form
+py -m http.server 8000
+
+# Terminal 4 — optional checks
+curl http://localhost:8080/api/v1/health
+```
+
+Then open the website at `http://localhost:8000` and n8n at `http://localhost:5678`.
+
+To stop the stack without deleting database data:
+
+```bash
+docker compose down
+```
+
+To stop it and reset the local database volume:
+
+```bash
+docker compose down -v
+```
+
+## 8. Run the tests
+
 ### Java unit tests
 
 From the API folder:
