@@ -30,7 +30,7 @@
       "id":"approval-check","name":"Check Owner Approval","type":"n8n-nodes-base.if","typeVersion":2,"position":[340,420]
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/approval' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"={{ JSON.stringify({ approvalStatus: ($json.body ?? $json).approvalStatus }) }}","options":{"timeout":10000}},
+      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/approval' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"{\n  \"approvalStatus\": \"={{($json.body ?? $json).approvalStatus}}\"\n}","options":{"timeout":10000}},
       "id":"update-approval","name":"Update Booking Approval","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[560,340]
     },
     {
@@ -46,7 +46,7 @@
       "id":"approval-rejected-response","name":"Return Rejection Result","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[780,520]
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/approval' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"={{ JSON.stringify({ approvalStatus: 'REJECTED' }) }}","options":{"timeout":10000}},
+      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/approval' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"{\n  \"approvalStatus\": \"REJECTED\"\n}","options":{"timeout":10000}},
       "id":"update-rejected-approval","name":"Update Rejected Booking","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[560,520]
     },
     {
@@ -54,7 +54,7 @@
       "id":"payment-webhook","name":"Demo Payment Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[120,760],"webhookId":"appointment-payment-confirmed"
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/payment-confirmation' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"={{ JSON.stringify({ paymentStatus: ($json.body ?? $json).paymentStatus }) }}","options":{"timeout":10000}},
+      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/payment-confirmation' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"{\n  \"paymentStatus\": \"={{($json.body ?? $json).paymentStatus}}\"\n}","options":{"timeout":10000}},
       "id":"verify-payment","name":"Verify Demo Payment With API","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[340,760]
     },
     {
@@ -94,6 +94,3 @@
   "meta":{"templateCredsSetupCompleted":false},
   "tags":[]
 }
-
-
-
