@@ -85,7 +85,7 @@ public class BookingService {
     /** Demo-safe lifecycle transition used by the local n8n workflow. */
     @Transactional
     public BookingRequests.BookingDetails updateApproval(String bookingReference, String approvalStatus) {
-        if (!approvalStatus.equals("APPROVED") && !approvalStatus.equals("REJECTED")) {
+        if (!"APPROVED".equals(approvalStatus) && !"REJECTED".equals(approvalStatus)) {
             throw new IllegalArgumentException("approvalStatus must be APPROVED or REJECTED");
         }
         bookingRepository.updateApproval(bookingReference, approvalStatus);
@@ -95,7 +95,7 @@ public class BookingService {
     /** Demo-safe payment result transition; a real adapter would verify with the provider. */
     @Transactional
     public BookingRequests.BookingDetails updatePayment(String bookingReference, String paymentStatus) {
-        if (!paymentStatus.equals("PAID") && !paymentStatus.equals("FAILED")) {
+        if (!"PAID".equals(paymentStatus) && !"FAILED".equals(paymentStatus)) {
             throw new IllegalArgumentException("paymentStatus must be PAID or FAILED");
         }
         bookingRepository.updatePayment(bookingReference, paymentStatus);
