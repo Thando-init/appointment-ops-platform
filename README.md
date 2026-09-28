@@ -284,7 +284,7 @@ docker compose up -d n8n
 
 Open the n8n editor at `http://localhost:5678`. Import the canonical workflow from `workflows/n8n/booking-intake.json`, then click **Execute workflow** on the canvas before sending a test webhook request. For an active workflow, use the production URL instead of the test URL:
 
-```
+```text
 Test:       http://localhost:5678/webhook-test/booking-created
 Production: http://localhost:5678/webhook/booking-created
 ```
@@ -549,7 +549,7 @@ When I have tested a meaningful change, I can save it with:
 
 ```
 git add .
-git commit -m "feat(booking  ): improve appointment workflow"
+git commit -m "feat(booking ): improve appointment workflow"
 git status
 ```
 
@@ -572,3 +572,16 @@ I never commit `.env`, real API keys, passwords, or generated `target/` files.
 - `workflows/n8n/README.md` explains the automation connection.
 
 I am treating this as both a portfolio project and the foundation of a small-business product. The next goal is not to add every possible feature. The next goal is to make one complete journey reliable: request, review, payment, and calendar confirmation.
+
+## Portfolio demo lifecycle
+
+The project includes demo-safe lifecycle endpoints so the complete workflow can be demonstrated without real provider credentials. These endpoints are intentionally labeled as demo adapters:
+
+```text
+POST /api/v1/bookings/{bookingReference}/approval
+POST /api/v1/bookings/{bookingReference}/payment-link
+POST /api/v1/bookings/{bookingReference}/payment-confirmation
+POST /api/v1/bookings/{bookingReference}/calendar-confirmation
+```
+
+The canonical n8n workflow now includes booking intake, owner approval, demo payment-link creation, payment confirmation, and calendar confirmation branches. Replace these adapters with authenticated Stripe, WhatsApp/email, and Google Calendar integrations before production use.
