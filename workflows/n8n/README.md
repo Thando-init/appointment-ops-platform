@@ -217,6 +217,20 @@ After the starter workflow works, I will add nodes in this order:
 
 n8n should use `bookingReference` to call the API and retrieve the current booking. This protects me from acting on stale or modified data.
 
+The starter workflow now includes this step. The Java API exposes:
+
+```text
+GET http://localhost:8080/api/v1/bookings/{bookingReference}
+```
+
+When n8n runs in Docker, the imported HTTP Request node uses `host.docker.internal` so the container can reach the API on the Windows host:
+
+```text
+GET http://host.docker.internal:8080/api/v1/bookings/{{$json.bookingReference}}
+```
+
+The node is placed between `Validate Booking Event` and `Acknowledge Event`. A successful lookup replaces the incoming event with the persisted booking record, and the acknowledgement includes `authoritativeBooking: true`. A missing booking currently fails the HTTP Request node rather than allowing downstream side effects.
+
 ### 2. Check whether the event was already processed
 
 I will use `eventId` or `bookingReference` to prevent duplicate side effects. A retry must not send two payment links or create two calendar events.
@@ -355,3 +369,23 @@ The product needs more than a form. For a real nail technician or salon, I event
 - Backups and privacy controls.
 
 I am building these in stages so that each part is testable and understandable.
+
+## Demo lifecycle endpoints
+
+The canonical workflow now includes local demo adapters so the complete lifecycle can be shown without real payment, messaging, or calendar credentials:
+
+```text
+POST /api/v1/bookings/{bookingReference}/approval
+POST /api/v1/bookings/{bookingReference}/payment-link
+POST /api/v1/bookings/{bookingReference}/payment-confirmation
+POST /api/v1/bookings/{bookingReference}/calendar-confirmation
+```
+
+The payment-link response is deliberately marked with `mode: demo`. These endpoints are portfolio/demo integrations, not production replacements for provider signature verification or credentials.
+
+The additional webhook paths in the same n8n workflow are:
+
+```text
+POST /webhook/owner-approval
+POST /webhook/payment-confirmed
+```
