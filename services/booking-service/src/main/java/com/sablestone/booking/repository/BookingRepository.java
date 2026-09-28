@@ -63,7 +63,7 @@ public class BookingRepository {
         String sql = """
                 SELECT booking_reference, service_id, client_name, phone, email,
                        starts_at, ends_at, booking_status, approval_status,
-                       payment_status, source, notes
+                       payment_status, source, notes, refund_status, cancellation_reason
                 FROM bookings
                 WHERE booking_reference = ?
                 """;
@@ -80,8 +80,17 @@ public class BookingRepository {
                 rs.getString("approval_status"),
                 rs.getString("payment_status"),
                 rs.getString("source"),
-                rs.getString("notes")
+                rs.getString("notes"),
+                rs.getString("refund_status"),
+                rs.getString("cancellation_reason")
         ), bookingReference).stream().findFirst();
+    }
+
+    public void cancelBooking(String bookingReference, String reason, boolean refundPending) {
+        int updated = jdbcTemplate.update(
+                "UPDATE bookings SET booking_status = 'CANCELLED', refund_status = ?, cancellation_reason = ?, updated_at = CURRENT_TIMESTAMP WHERE booking_reference = ?",
+                refundPending ? "REFUND_PENDING" : "NOT_APPLICABLE", reason, bookingReference);
+        requireUpdated(updated, bookingReference);
     }
 
     public void updateApproval(String bookingReference, String approvalStatus) {

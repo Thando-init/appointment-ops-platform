@@ -59,10 +59,13 @@ public final class BookingRequests {
             String approvalStatus,
             String paymentStatus,
             String source,
-            String notes
+            String notes,
+            String refundStatus,
+            String cancellationReason
     ) {}
 
     public record ApprovalRequest(String approvalStatus) {}
     public record PaymentConfirmationRequest(String paymentStatus) {}
     public record PaymentLinkResponse(String bookingReference, String paymentReference, String paymentUrl, String mode) {}
+    public record CancellationRequest(String reason) {}
 }

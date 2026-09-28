@@ -154,6 +154,19 @@ public class AvailabilityController {
         }
     }
 
+    /** Website/client cancellation endpoint; any refund remains owner-reviewed. */
+    @PostMapping("/bookings/{bookingReference}/cancellation")
+    public BookingRequests.BookingDetails cancelBooking(
+            @PathVariable String bookingReference,
+            @RequestBody(required = false) BookingRequests.CancellationRequest request
+    ) {
+        try {
+            return bookingService.cancel(bookingReference, request == null ? null : request.reason());
+        } catch (BookingService.BookingNotFoundException | IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+        }
+    }
+
     /** Stable response shape for health checks. */
     public record HealthResponse(String status, String service) {}
 }

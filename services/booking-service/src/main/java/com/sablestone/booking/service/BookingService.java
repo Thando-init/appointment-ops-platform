@@ -114,6 +114,21 @@ public class BookingService {
         return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
     }
 
+    /** Cancels a booking without issuing money automatically; paid bookings become refund-pending. */
+    @Transactional
+    public BookingRequests.BookingDetails cancel(String bookingReference, String reason) {
+        BookingRequests.BookingDetails current = findByReference(bookingReference)
+                .orElseThrow(() -> new BookingNotFoundException(bookingReference));
+        if ("CANCELLED".equals(current.bookingStatus())) {
+            return current;
+        }
+        bookingRepository.cancelBooking(
+                bookingReference,
+                reason == null || reason.isBlank() ? "Client requested cancellation" : reason,
+                "PAID".equals(current.paymentStatus()));
+        return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
+    }
+
     public static class BookingNotFoundException extends RuntimeException {
         public BookingNotFoundException(String bookingReference) {
             super("Booking not found: " + bookingReference);
