@@ -184,13 +184,13 @@ docker compose ps
 
 Open n8n at `http://localhost:5678`, import `workflows/n8n/booking-intake.json`, and use the Webhook node's **Execute workflow** button before sending a test request. The test URL is:
 
-```
+```text
 http://localhost:5678/webhook-test/booking-created
 ```
 
 For a persistent demo, activate the workflow and use:
 
-```
+```text
 http://localhost:5678/webhook/booking-created
 ```
 
