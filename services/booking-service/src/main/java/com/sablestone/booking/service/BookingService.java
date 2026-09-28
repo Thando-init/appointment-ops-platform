@@ -98,6 +98,11 @@ public class BookingService {
         if (!"PAID".equals(paymentStatus) && !"FAILED".equals(paymentStatus)) {
             throw new IllegalArgumentException("paymentStatus must be PAID or FAILED");
         }
+        BookingRequests.BookingDetails current = findByReference(bookingReference)
+                .orElseThrow(() -> new BookingNotFoundException(bookingReference));
+        if ("PAID".equals(paymentStatus) && !"APPROVED".equals(current.approvalStatus())) {
+            throw new IllegalArgumentException("Payment cannot be marked PAID until the booking is APPROVED");
+        }
         bookingRepository.updatePayment(bookingReference, paymentStatus);
         return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
     }
