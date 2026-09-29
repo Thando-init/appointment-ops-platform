@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
@@ -34,6 +35,7 @@ public class BookingMessageConsumer {
         this(objectMapper, "");
     }
 
+    @Autowired
     public BookingMessageConsumer(
             ObjectMapper objectMapper,
             @Value("${app.n8n.booking-created-webhook-url:}") String n8nWebhookUrl
