@@ -316,23 +316,6 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "={{ 'http://host.docker.internal:8080/api/v1/bookings/' + $json.bookingReference + '/calendar-confirmation' }}",
-        "options": {
-          "timeout": 10000
-        }
-      },
-      "id": "04787c14-b0f5-4406-a5e8-b405169a6d3a",
-      "name": "Confirm Demo Calendar Event",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        176,
-        592
-      ]
-    },
-    {
-      "parameters": {
         "respondWith": "json",
         "responseBody": "{\n  \"accepted\": true,\n  \"paymentStatus\": \"PAID\",\n  \"calendarStatus\": \"CONFIRMED\",\n  \"message\": \"Booking is confirmed\"\n}",
         "options": {}
@@ -342,8 +325,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        400,
-        592
+        784,
+        656
       ]
     },
     {
@@ -357,8 +340,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        176,
-        752
+        160,
+        880
       ]
     },
     {
@@ -400,6 +383,87 @@
       ],
       "id": "1c63e235-7141-47d8-85f9-77666018132b",
       "name": "Prepare Intake Response"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/api/v1/bookings/{{ $('Verify Demo Payment With API' ).item.json.body?.bookingReference ?? $('Verify Demo Payment With API').item.json.bookingReference }}/calendar-event",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"providerEventId\": \"{{$json.id}}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        576,
+        672
+      ],
+      "id": "c464df8e-6a1b-4db2-b901-3ebcb943a80f",
+      "name": "Save Calendar Event ID"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/calendar/v3/calendars/{{encodeURIComponent('tay85315@gmail.com' )}}/events",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"summary\":\"Amina Patel — gel-overlay-art\",\"description\":\"Booking reference: SALON-9475E2CB\\nClient: Amina Patel\\nPhone: +27821234567\\nEmail: amina@example.com\\nPayment status: PAID\",\"start\":{\"dateTime\":\"2026-10-03T14:00:00+02:00\",\"timeZone\":\"Africa/Johannesburg\"},\"end\":{\"dateTime\":\"2026-10-03T16:00:00+02:00\",\"timeZone\":\"Africa/Johannesburg\"}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        160,
+        672
+      ],
+      "id": "86537c7d-3ec8-486b-9bc3-6b7f730758d4",
+      "name": "Create Google Calendar Event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "GwtUMf5hj6YMBbDL",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "tay85315@gmail.com",
+          "mode": "list",
+          "cachedResultName": "tay85315@gmail.com"
+        },
+        "start": "=2026-10-04T14:00:00+02:00\n",
+        "end": "=2026-10-04T15:00:00+02:00\n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        672
+      ],
+      "id": "22e8a0fa-927b-4d68-8bdd-5d66140861de",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "GwtUMf5hj6YMBbDL",
+          "name": "Google Calendar account"
+        }
+      },
+      "disabled": true
     }
   ],
   "pinData": {},
@@ -532,7 +596,7 @@
       "main": [
         [
           {
-            "node": "Confirm Demo Calendar Event",
+            "node": "Create Google Calendar Event",
             "type": "main",
             "index": 0
           }
@@ -540,17 +604,6 @@
         [
           {
             "node": "Return Payment Attention",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Confirm Demo Calendar Event": {
-      "main": [
-        [
-          {
-            "node": "Return Confirmation Result",
             "type": "main",
             "index": 0
           }
@@ -578,6 +631,39 @@
           }
         ]
       ]
+    },
+    "Save Calendar Event ID": {
+      "main": [
+        [
+          {
+            "node": "Return Confirmation Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Google Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event": {
+      "main": [
+        [
+          {
+            "node": "Save Calendar Event ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -588,7 +674,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "27f71778-84d3-4311-9da7-284abd1ab08d",
+  "versionId": "19fa0b60-8ac4-4e5c-b94a-8d04dc2f723d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "d4057151a48efdfcf0408453df2bccc07bff67af4a80b420c0a4fb65bf8610ee"
