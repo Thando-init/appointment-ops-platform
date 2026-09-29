@@ -1,96 +1,598 @@
 {
-  "name": "Appointment Ops - Canonical Booking Automation",
+  "name": "Appointment Ops - Canonical Booking Automation 2",
   "nodes": [
     {
-      "parameters": {"httpMethod":"POST","path":"booking-created","responseMode":"responseNode","options":{}},
-      "id":"booking-webhook","name":"Booking Created Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[120,120],"webhookId":"appointment-booking-created"
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "booking-created",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5bb4b4c2-1a4f-4b03-ba58-4e0516f22b1f",
+      "name": "Booking Created Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        0
+      ],
+      "webhookId": "appointment-booking-created"
     },
     {
-      "parameters":{"conditions":{"string":[{"value1":"={{($json.body ?? $json).eventType}}","operation":"equals","value2":"booking.created"}],"boolean":[{"value1":"={{!!($json.body ?? $json).bookingReference}}","operation":"isTrue"}]}},
-      "id":"validate-event","name":"Validate Booking Event","type":"n8n-nodes-base.if","typeVersion":2,"position":[340,120]
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "3a7e5a4f-8e60-4b78-8a2c-e2ce30bcb59a",
+              "leftValue": "={{ $json.body.eventType }}",
+              "rightValue": "booking.created",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "15b55403-9057-4249-bce7-f843d37cdceb",
+              "leftValue": "={{ $json.body.bookingReference }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "919e601d-cad6-40f1-9c92-00b92a1518a9",
+      "name": "Validate Booking Event",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        0
+      ]
     },
     {
-      "parameters":{"method":"GET","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) }}","sendQuery":false,"sendHeaders":false,"options":{"timeout":10000}},
-      "id":"fetch-authoritative-booking","name":"Fetch Authoritative Booking","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[560,40]
+      "parameters": {
+        "url": "={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "1494e19c-946e-4a55-8e6c-db9e5c72e136",
+      "name": "Fetch Authoritative Booking",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -48,
+        -80
+      ]
     },
     {
-      "parameters":{"respondWith":"json","responseBody":"{\n  \"accepted\": true,\n  \"bookingReference\": \"={{$json.bookingReference}}\",\n  \"authoritativeBooking\": true,\n  \"nextStep\": \"owner-approval\"\n}","options":{}},
-      "id":"intake-response","name":"Acknowledge Intake","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[780,40]
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "f3902d6c-d295-44ec-bbef-8e3d38ba56ef",
+      "name": "Acknowledge Intake",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -80
+      ]
     },
     {
-      "parameters":{"respondWith":"json","responseBody":"{\n  \"accepted\": false,\n  \"reason\": \"Invalid booking event\"\n}","options":{"responseCode":400}},
-      "id":"rejected-response","name":"Reject Invalid Event","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[560,220]
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"accepted\": false,\n  \"reason\": \"Invalid booking event\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "id": "70a96733-c564-4914-83b6-3173e5649d8e",
+      "name": "Reject Invalid Event",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        112
+      ]
     },
     {
-      "parameters":{"httpMethod":"POST","path":"owner-approval","responseMode":"responseNode","options":{}},
-      "id":"approval-webhook","name":"Owner Approval Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[120,420],"webhookId":"appointment-owner-approval"
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "owner-approval",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0a63f0d0-0fb9-4ec1-b8bf-25417504bde7",
+      "name": "Owner Approval Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        336
+      ],
+      "webhookId": "appointment-owner-approval"
     },
     {
-      "parameters":{"conditions":{"string":[{"value1":"={{($json.body ?? $json).approvalStatus}}","operation":"equals","value2":"APPROVED"}] }},
-      "id":"approval-check","name":"Check Owner Approval","type":"n8n-nodes-base.if","typeVersion":2,"position":[340,420]
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cc50323d-5272-4488-ae30-bed7cb3470cb",
+              "leftValue": "={{ $json.body?.approvalStatus ?? $json.approvalStatus }}",
+              "rightValue": "APPROVED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "eb43e6c1-d7d9-4cbc-9cc4-1910b87c0bb5",
+      "name": "Check Owner Approval",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        336
+      ]
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/approval' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"{\n  \"approvalStatus\": \"={{($json.body ?? $json).approvalStatus}}\"\n}","options":{"timeout":10000}},
-      "id":"update-approval","name":"Update Booking Approval","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[560,340]
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/api/v1/bookings/{{$json.body?.bookingReference ?? $json.bookingReference}}/approval\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"approvalStatus\": \"{{$json.body?.approvalStatus ?? $json.approvalStatus}}\"\n}\n\n",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "cca05780-92a9-4cc7-85a4-9c10d027ab0c",
+      "name": "Update Booking Approval",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -48,
+        256
+      ]
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/payment-link' }}","sendQuery":false,"sendHeaders":false,"sendBody":false,"options":{"timeout":10000}},
-      "id":"create-payment-link","name":"Create Demo Payment Link","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[780,340]
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/payment-link' }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "1647b92f-eb65-4722-9caa-b8ab924be9be",
+      "name": "Create Demo Payment Link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        256
+      ]
     },
     {
-      "parameters":{"respondWith":"json","responseBody":"{\n  \"accepted\": true,\n  \"approvalStatus\": \"APPROVED\",\n  \"paymentUrl\": \"={{$json.paymentUrl}}\",\n  \"mode\": \"demo\"\n}","options":{}},
-      "id":"approval-approved-response","name":"Return Payment Link","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[1000,340]
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"accepted\": true,\n  \"approvalStatus\": \"APPROVED\",\n  \"paymentUrl\": \"={{$json.paymentUrl}}\",\n  \"mode\": \"demo\"\n}",
+        "options": {}
+      },
+      "id": "61905178-6fc8-46a2-b769-3a65877203bf",
+      "name": "Return Payment Link",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        400,
+        256
+      ]
     },
     {
-      "parameters":{"respondWith":"json","responseBody":"{\n  \"accepted\": true,\n  \"approvalStatus\": \"REJECTED\",\n  \"message\": \"Booking rejected and client notification is ready\"\n}","options":{}},
-      "id":"approval-rejected-response","name":"Return Rejection Result","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[780,520]
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"accepted\": true,\n  \"approvalStatus\": \"REJECTED\",\n  \"message\": \"Booking rejected and client notification is ready\"\n}",
+        "options": {}
+      },
+      "id": "dac49c39-3fe9-4e03-9f05-c3c5c3cbfc4a",
+      "name": "Return Rejection Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        176,
+        432
+      ]
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/approval' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"{\n  \"approvalStatus\": \"REJECTED\"\n}","options":{"timeout":10000}},
-      "id":"update-rejected-approval","name":"Update Rejected Booking","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[560,520]
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/api/v1/bookings/{{$json.body?.bookingReference ?? $json.bookingReference}}/approval\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"approvalStatus\": \"REJECTED\"\n}\n\n",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "5c00de0b-6859-4fa5-aea6-347a6869b135",
+      "name": "Update Rejected Booking",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -48,
+        432
+      ]
     },
     {
-      "parameters":{"httpMethod":"POST","path":"payment-confirmed","responseMode":"responseNode","options":{}},
-      "id":"payment-webhook","name":"Demo Payment Webhook","type":"n8n-nodes-base.webhook","typeVersion":2,"position":[120,760],"webhookId":"appointment-payment-confirmed"
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "payment-confirmed",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9bb15850-e61c-4606-b9d7-b7c4973e32dd",
+      "name": "Demo Payment Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        672
+      ],
+      "webhookId": "appointment-payment-confirmed"
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + (($json.body ?? $json).bookingReference) + '/payment-confirmation' }}","sendQuery":false,"sendHeaders":false,"sendBody":true,"contentType":"json","jsonBody":"{\n  \"paymentStatus\": \"={{($json.body ?? $json).paymentStatus}}\"\n}","options":{"timeout":10000}},
-      "id":"verify-payment","name":"Verify Demo Payment With API","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[340,760]
+      "parameters": {
+        "method": "POST",
+        "url": "=http://host.docker.internal:8080/api/v1/bookings/{{$json.body?.bookingReference ?? $json.bookingReference}}/payment-confirmation\n",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"paymentStatus\": \"{{$json.body?.paymentStatus ?? $json.paymentStatus}}\"\n}\n\n\n",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "aea68b88-c78b-433f-9b1a-a816cc4d7e79",
+      "name": "Verify Demo Payment With API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -272,
+        672
+      ]
     },
     {
-      "parameters":{"conditions":{"string":[{"value1":"={{$json.paymentStatus}}","operation":"equals","value2":"PAID"}]}},
-      "id":"payment-check","name":"Check Payment Result","type":"n8n-nodes-base.if","typeVersion":2,"position":[560,760]
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.paymentStatus}}",
+              "operation": "equals",
+              "value2": "PAID"
+            }
+          ],
+          "combinator": "and",
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          }
+        },
+        "options": {}
+      },
+      "id": "2ebe7fa3-2d93-48fe-ab11-2dc11832485a",
+      "name": "Check Payment Result",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        672
+      ]
     },
     {
-      "parameters":{"method":"POST","url":"={{ 'http://host.docker.internal:8080/api/v1/bookings/' + $json.bookingReference + '/calendar-confirmation' }}","sendQuery":false,"sendHeaders":false,"sendBody":false,"options":{"timeout":10000}},
-      "id":"confirm-calendar","name":"Confirm Demo Calendar Event","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[780,680]
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://host.docker.internal:8080/api/v1/bookings/' + $json.bookingReference + '/calendar-confirmation' }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "04787c14-b0f5-4406-a5e8-b405169a6d3a",
+      "name": "Confirm Demo Calendar Event",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        592
+      ]
     },
     {
-      "parameters":{"respondWith":"json","responseBody":"{\n  \"accepted\": true,\n  \"paymentStatus\": \"PAID\",\n  \"calendarStatus\": \"CONFIRMED\",\n  \"message\": \"Booking is confirmed\"\n}","options":{}},
-      "id":"payment-paid-response","name":"Return Confirmation Result","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[1000,680]
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"accepted\": true,\n  \"paymentStatus\": \"PAID\",\n  \"calendarStatus\": \"CONFIRMED\",\n  \"message\": \"Booking is confirmed\"\n}",
+        "options": {}
+      },
+      "id": "0a4c2be7-309a-4f2c-97d9-09752d3a63c1",
+      "name": "Return Confirmation Result",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        400,
+        592
+      ]
     },
     {
-      "parameters":{"respondWith":"json","responseBody":"{\n  \"accepted\": true,\n  \"paymentStatus\": \"={{$json.paymentStatus}}\",\n  \"message\": \"Payment requires attention\"\n}","options":{}},
-      "id":"payment-failed-response","name":"Return Payment Attention","type":"n8n-nodes-base.respondToWebhook","typeVersion":1,"position":[780,860]
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"accepted\": true,\n  \"paymentStatus\": \"={{$json.paymentStatus}}\",\n  \"message\": \"Payment requires attention\"\n}",
+        "options": {}
+      },
+      "id": "867bc972-8d52-4a40-a4b6-c3bebedf0d54",
+      "name": "Return Payment Attention",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        176,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "tay85315@gmail.com",
+        "toEmail": "tay85315@gmail.com",
+        "subject": "=New appointment request — {{$json.bookingReference}}",
+        "emailFormat": "text",
+        "text": "=New appointment request\n\nBooking reference: {{$json.bookingReference}}\nClient: {{$json.clientName}}\nPhone: {{$json.phone}}\nEmail: {{$json.email}}\n\nService: {{$json.serviceId}}\nDate: {{$json.date}}\nStart: {{$json.start}}\nEnd: {{$json.end}}\n\nBooking status: {{$json.bookingStatus}}\nApproval status: {{$json.approvalStatus}}\nPayment status: {{$json.paymentStatus}}\n\nReview this booking in the owner approval workflow.\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        160,
+        -80
+      ],
+      "id": "e8591af7-37ff-4e3e-b6b6-8389ff175178",
+      "name": "Send an Email",
+      "webhookId": "3be73761-1a9c-4184-8974-893b3c7a9a99",
+      "credentials": {
+        "smtp": {
+          "id": "gAqAn2DXNSMGThg8",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ {\n  accepted: true,\n  bookingReference: $('Fetch Authoritative Booking').item.json.body?.bookingReference ?? $('Fetch Authoritative Booking').item.json.bookingReference,\n  authoritativeBooking: true,\n  nextStep: \"owner-approval\"\n} }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        368,
+        -80
+      ],
+      "id": "1c63e235-7141-47d8-85f9-77666018132b",
+      "name": "Prepare Intake Response"
     }
   ],
-  "connections":{
-    "Booking Created Webhook":{"main":[[{"node":"Validate Booking Event","type":"main","index":0}]]},
-    "Validate Booking Event":{"main":[[{"node":"Fetch Authoritative Booking","type":"main","index":0}],[{"node":"Reject Invalid Event","type":"main","index":0}]]},
-    "Fetch Authoritative Booking":{"main":[[{"node":"Acknowledge Intake","type":"main","index":0}]]},
-    "Owner Approval Webhook":{"main":[[{"node":"Check Owner Approval","type":"main","index":0}]]},
-    "Check Owner Approval":{"main":[[{"node":"Update Booking Approval","type":"main","index":0}],[{"node":"Update Rejected Booking","type":"main","index":0}]]},
-    "Update Booking Approval":{"main":[[{"node":"Create Demo Payment Link","type":"main","index":0}]]},
-    "Create Demo Payment Link":{"main":[[{"node":"Return Payment Link","type":"main","index":0}]]},
-    "Update Rejected Booking":{"main":[[{"node":"Return Rejection Result","type":"main","index":0}]]},
-    "Demo Payment Webhook":{"main":[[{"node":"Verify Demo Payment With API","type":"main","index":0}]]},
-    "Verify Demo Payment With API":{"main":[[{"node":"Check Payment Result","type":"main","index":0}]]},
-    "Check Payment Result":{"main":[[{"node":"Confirm Demo Calendar Event","type":"main","index":0}],[{"node":"Return Payment Attention","type":"main","index":0}]]},
-    "Confirm Demo Calendar Event":{"main":[[{"node":"Return Confirmation Result","type":"main","index":0}]]}
+  "pinData": {},
+  "connections": {
+    "Booking Created Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Booking Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Booking Event": {
+      "main": [
+        [
+          {
+            "node": "Fetch Authoritative Booking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invalid Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Authoritative Booking": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Owner Approval Webhook": {
+      "main": [
+        [
+          {
+            "node": "Check Owner Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Owner Approval": {
+      "main": [
+        [
+          {
+            "node": "Update Booking Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Rejected Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Booking Approval": {
+      "main": [
+        [
+          {
+            "node": "Create Demo Payment Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Demo Payment Link": {
+      "main": [
+        [
+          {
+            "node": "Return Payment Link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Rejected Booking": {
+      "main": [
+        [
+          {
+            "node": "Return Rejection Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demo Payment Webhook": {
+      "main": [
+        [
+          {
+            "node": "Verify Demo Payment With API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Demo Payment With API": {
+      "main": [
+        [
+          {
+            "node": "Check Payment Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Payment Result": {
+      "main": [
+        [
+          {
+            "node": "Confirm Demo Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return Payment Attention",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm Demo Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Return Confirmation Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Intake Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Intake Response": {
+      "main": [
+        [
+          {
+            "node": "Acknowledge Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "active":false,
-  "settings":{},
-  "versionId":"appointment-ops-canonical-v7",
-  "meta":{"templateCredsSetupCompleted":false},
-  "tags":[]
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "27f71778-84d3-4311-9da7-284abd1ab08d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d4057151a48efdfcf0408453df2bccc07bff67af4a80b420c0a4fb65bf8610ee"
+  },
+  "id": "CkRk9YGMVRLnWSUI",
+  "tags": []
 }
