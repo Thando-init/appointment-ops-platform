@@ -7,6 +7,7 @@ import com.sablestone.booking.service.AvailabilityService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -149,6 +150,29 @@ public class AvailabilityController {
     public BookingRequests.BookingDetails confirmCalendar(@PathVariable String bookingReference) {
         try {
             return bookingService.confirmCalendar(bookingReference);
+        } catch (BookingService.BookingNotFoundException | IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+        }
+    }
+
+    /** Persists a real Google Calendar event ID and confirms the booking. */
+    @PostMapping("/bookings/{bookingReference}/calendar-event")
+    public BookingRequests.BookingDetails recordCalendarEvent(
+            @PathVariable String bookingReference,
+            @RequestBody BookingRequests.CalendarEventRequest request
+    ) {
+        try {
+            return bookingService.recordCalendarEvent(bookingReference, request.providerEventId());
+        } catch (BookingService.BookingNotFoundException | IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
+        }
+    }
+
+    /** Clears the provider event reference after the real calendar event is deleted. */
+    @DeleteMapping("/bookings/{bookingReference}/calendar-event")
+    public BookingRequests.BookingDetails deleteCalendarEvent(@PathVariable String bookingReference) {
+        try {
+            return bookingService.clearCalendarEvent(bookingReference);
         } catch (BookingService.BookingNotFoundException | IllegalArgumentException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage(), exception);
         }

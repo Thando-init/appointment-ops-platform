@@ -61,11 +61,13 @@ public final class BookingRequests {
             String source,
             String notes,
             String refundStatus,
-            String cancellationReason
+            String cancellationReason,
+            String calendarEventId
     ) {}
 
     public record ApprovalRequest(String approvalStatus) {}
     public record PaymentConfirmationRequest(String paymentStatus) {}
     public record PaymentLinkResponse(String bookingReference, String paymentReference, String paymentUrl, String mode) {}
     public record CancellationRequest(String reason) {}
+    public record CalendarEventRequest(String providerEventId) {}
 }

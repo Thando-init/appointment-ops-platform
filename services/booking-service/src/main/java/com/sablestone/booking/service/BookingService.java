@@ -114,6 +114,23 @@ public class BookingService {
         return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
     }
 
+    /** Stores the provider event ID only after n8n successfully creates the calendar event. */
+    @Transactional
+    public BookingRequests.BookingDetails recordCalendarEvent(String bookingReference, String providerEventId) {
+        if (providerEventId == null || providerEventId.isBlank()) {
+            throw new IllegalArgumentException("providerEventId is required");
+        }
+        bookingRepository.saveCalendarEventId(bookingReference, providerEventId);
+        return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
+    }
+
+    /** Clears the stored provider event ID after n8n deletes the external event. */
+    @Transactional
+    public BookingRequests.BookingDetails clearCalendarEvent(String bookingReference) {
+        bookingRepository.clearCalendarEventId(bookingReference);
+        return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
+    }
+
     /** Cancels a booking without issuing money automatically; paid bookings become refund-pending. */
     @Transactional
     public BookingRequests.BookingDetails cancel(String bookingReference, String reason) {
