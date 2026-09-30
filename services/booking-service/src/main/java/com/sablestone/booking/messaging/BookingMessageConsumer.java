@@ -73,14 +73,20 @@ public class BookingMessageConsumer {
                     .POST(HttpRequest.BodyPublishers.ofString(json))
                     .timeout(Duration.ofSeconds(30))
                     .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("n8n returned HTTP " + response.statusCode() + ": " + response.body());
-            }
-            log.info("Forwarded booking {} to n8n successfully with HTTP {}", bookingReference, response.statusCode());
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while forwarding booking to n8n", exception);
+            httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .whenComplete((response, exception) -> {
+                        if (exception != null) {
+                            log.error("Asynchronous n8n forwarding failed for booking {}", bookingReference, exception);
+                            return;
+                        }
+                        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                            log.error("n8n returned HTTP {} for booking {}: {}",
+                                    response.statusCode(), bookingReference, response.body());
+                            return;
+                        }
+                        log.info("n8n accepted booking {} with HTTP {}", bookingReference, response.statusCode());
+                    });
+            log.info("Dispatched booking {} to n8n asynchronously; JMS listener is released", bookingReference);
         } catch (Exception exception) {
             throw new IllegalStateException("Could not forward booking to n8n", exception);
         }
