@@ -575,13 +575,15 @@ I am treating this as both a portfolio project and the foundation of a small-bus
 
 ## Portfolio demo lifecycle
 
-The project includes demo-safe lifecycle endpoints so the complete workflow can be demonstrated without real provider credentials. These endpoints are intentionally labeled as demo adapters:
+The project includes demo-safe lifecycle endpoints so the complete workflow can be demonstrated without processing real payments. The owner notification and Google Calendar steps use real integrations in the local n8n workflow; payment creation and payment confirmation remain demo adapters:
 
 ```text
 POST /api/v1/bookings/{bookingReference}/approval
 POST /api/v1/bookings/{bookingReference}/payment-link
 POST /api/v1/bookings/{bookingReference}/payment-confirmation
-POST /api/v1/bookings/{bookingReference}/calendar-confirmation
+POST /api/v1/bookings/{bookingReference}/calendar-event
 ```
 
-The canonical n8n workflow now includes booking intake, owner approval, demo payment-link creation, payment confirmation, and calendar confirmation branches. Replace these adapters with authenticated Stripe, WhatsApp/email, and Google Calendar integrations before production use.
+The canonical n8n workflow includes booking intake, owner notification, approval/rejection branches, demo payment-link creation, payment confirmation, and real Google Calendar event creation. The HTTP Request calendar node stores the returned provider event ID in the API and uses the authoritative `calendarEventId` guard to prevent duplicate events on retries.
+
+For the completed lifecycle and portfolio evidence checklist, see `docs/portfolio-case-study.md`. For owner email and approval setup, see `docs/owner-approval-setup.md`. Before production use, add owner authentication, signed payment webhooks, HTTPS, expiring approval tokens, and a real payment provider.

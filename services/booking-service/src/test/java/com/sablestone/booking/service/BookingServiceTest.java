@@ -161,10 +161,55 @@ class BookingServiceTest {
         verify(bookingRepository, never()).hasActiveOverlap(any(), any());
     }
 
+    @Test
+    void treatsRetryWithSameCalendarEventIdAsIdempotent() {
+        BookingRequests.BookingDetails current = bookingDetails("google-event-123");
+        when(bookingRepository.findByReference("SALON-AB12CD34")).thenReturn(Optional.of(current));
+
+        BookingRequests.BookingDetails response = bookingService.recordCalendarEvent(
+                "SALON-AB12CD34", "google-event-123");
+
+        assertEquals(current, response);
+        verify(bookingRepository, never()).saveCalendarEventId(any(), any());
+    }
+
+    @Test
+    void rejectsAttemptToReplaceExistingCalendarEvent() {
+        when(bookingRepository.findByReference("SALON-AB12CD34"))
+                .thenReturn(Optional.of(bookingDetails("google-event-123")));
+
+        assertThrows(IllegalArgumentException.class, () -> bookingService.recordCalendarEvent(
+                "SALON-AB12CD34", "google-event-456"));
+        verify(bookingRepository, never()).saveCalendarEventId(any(), any());
+    }
+
+    @Test
+    void rejectsCalendarEventBeforeApprovalAndPayment() {
+        when(bookingRepository.findByReference("SALON-AB12CD34"))
+                .thenReturn(Optional.of(bookingDetails(null, "PENDING_REVIEW", "NOT_STARTED")));
+
+        assertThrows(IllegalArgumentException.class, () -> bookingService.recordCalendarEvent(
+                "SALON-AB12CD34", "google-event-123"));
+        verify(bookingRepository, never()).saveCalendarEventId(any(), any());
+    }
+
     /** Creates the same shape of request that the website will submit. */
     private BookingRequests.CreateBookingRequest requestFor(String serviceId, LocalTime time) {
         return new BookingRequests.CreateBookingRequest(
                 "Amina Patel", "+27821234567", "amina@example.com", serviceId,
                 LocalDate.of(2026, 10, 3), time, "Chrome finish", "website");
+    }
+
+    private BookingRequests.BookingDetails bookingDetails(String calendarEventId) {
+        return bookingDetails(calendarEventId, "APPROVED", "PAID");
+    }
+
+    private BookingRequests.BookingDetails bookingDetails(
+            String calendarEventId, String approvalStatus, String paymentStatus) {
+        return new BookingRequests.BookingDetails(
+                "SALON-AB12CD34", "gel-overlay-art", "Amina Patel", "+27821234567",
+                "amina@example.com", LocalDate.of(2026, 10, 3), LocalTime.of(14, 0),
+                LocalTime.of(16, 0), "CONFIRMED", approvalStatus, paymentStatus, "website",
+                "Chrome finish", "NOT_APPLICABLE", null, calendarEventId);
     }
 }

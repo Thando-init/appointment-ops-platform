@@ -57,15 +57,31 @@ curl -i -X POST \
   -d '{"reason":"Client requested cancellation"}'
 ```
 
-## Calendar behavior
+## Google Calendar behavior
 
-The current calendar step is a demo adapter:
+The live demo uses n8n's authenticated **HTTP Request** node to call the Google Calendar API. The built-in Google Calendar node was tested after upgrading n8n, but the HTTP Request path is the currently proven integration.
+
+The payment branch should be:
+
+```text
+Check Payment Result (PAID)
+  -> GET authoritative booking
+  -> stop if calendarEventId is already populated
+  -> POST Google Calendar events API
+  -> POST /api/v1/bookings/{bookingReference}/calendar-event
+```
+
+The API persists the returned Google event ID and marks the booking `CONFIRMED` in one database update. Repeating the persistence call with the same provider event ID is safe; attempting to replace an existing event ID is rejected. A booking must be `APPROVED` and `PAID` before a calendar event can be persisted.
+
+Use the demo adapter only for an offline workflow test:
 
 ```text
 POST /api/v1/bookings/{bookingReference}/calendar-confirmation
 ```
 
-It marks the booking `CONFIRMED`. A real Google Calendar or Microsoft Graph node should be inserted before this API call, and the created provider event ID should be persisted before confirmation. The booking API remains the source of truth.
+It marks the booking `CONFIRMED` without creating a provider event and should not be used in the real Google Calendar path.
+
+Do not repeatedly replay the same payment webhook while testing. A provider event can be created before a network failure is observed by n8n; the authoritative `calendarEventId` check prevents later retries from creating another event.
 
 ## Amendments and AI
 

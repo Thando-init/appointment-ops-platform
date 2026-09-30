@@ -114,11 +114,27 @@ public class BookingService {
         return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));
     }
 
-    /** Stores the provider event ID only after n8n successfully creates the calendar event. */
+    /**
+     * Stores the provider event ID only after n8n successfully creates the calendar event.
+     *
+     * <p>This endpoint is intentionally idempotent for retries containing the same
+     * provider ID, while rejecting attempts to replace an already-linked event.</p>
+     */
     @Transactional
     public BookingRequests.BookingDetails recordCalendarEvent(String bookingReference, String providerEventId) {
         if (providerEventId == null || providerEventId.isBlank()) {
             throw new IllegalArgumentException("providerEventId is required");
+        }
+        BookingRequests.BookingDetails current = findByReference(bookingReference)
+                .orElseThrow(() -> new BookingNotFoundException(bookingReference));
+        if (current.calendarEventId() != null && !current.calendarEventId().isBlank()) {
+            if (current.calendarEventId().equals(providerEventId)) {
+                return current;
+            }
+            throw new IllegalArgumentException("Booking already has a different calendar event");
+        }
+        if (!"APPROVED".equals(current.approvalStatus()) || !"PAID".equals(current.paymentStatus())) {
+            throw new IllegalArgumentException("Calendar event requires an APPROVED and PAID booking");
         }
         bookingRepository.saveCalendarEventId(bookingReference, providerEventId);
         return findByReference(bookingReference).orElseThrow(() -> new BookingNotFoundException(bookingReference));

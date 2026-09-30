@@ -1,0 +1,30 @@
+.owner-page { width: min(980px, calc(100% - 48px)); margin: 0 auto; }
+.owner-label { color: var(--rose-deep); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.owner-intro { max-width: 650px; padding: 70px 0 38px; }
+.owner-intro h1 { font-size: clamp(42px, 6vw, 68px); }
+.owner-intro h1 em { color: var(--rose-deep); font-style: italic; }
+.owner-intro > p:last-child { max-width: 560px; margin: 20px 0 0; color: var(--muted); font-size: 15px; }
+.review-card { padding: clamp(26px, 5vw, 48px); border: 1px solid var(--line); border-radius: 16px; background: rgba(255,253,251,.9); box-shadow: var(--shadow); }
+.review-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; padding-bottom: 25px; border-bottom: 1px solid var(--line); }
+.review-heading h2 { font-size: clamp(25px, 4vw, 38px); }
+.status-pill { display: inline-flex; align-items: center; min-height: 27px; padding: 0 10px; border-radius: 99px; color: #6b5349; background: #f2e6df; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.status-pill.approved { color: #3f6855; background: #e2eee7; }
+.status-pill.rejected { color: #874f4a; background: #f5dfdc; }
+.review-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin-top: 25px; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; background: var(--line); }
+.detail-item { display: grid; gap: 5px; min-height: 77px; padding: 15px; background: #fffdfb; }
+.detail-item span { color: var(--muted); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.detail-item strong { color: var(--ink); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.review-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+.button.danger { color: #874f4a; border-color: #e4c6c1; background: #fff8f6; }
+.button.danger:hover { border-color: #c98b83; background: #fff1ef; }
+.review-message { margin: 20px 0 0; color: var(--muted); font-size: 13px; }
+.owner-footnote { padding: 22px 3px 38px; color: #a1958e; font-size: 10px; }
+@media (max-width: 620px) {
+  .owner-page { width: min(100% - 30px, 520px); }
+  .owner-intro { padding: 50px 0 30px; }
+  .owner-label { font-size: 9px; }
+  .review-heading { align-items: flex-start; flex-direction: column; }
+  .review-grid { grid-template-columns: 1fr; }
+  .review-actions { align-items: stretch; flex-direction: column-reverse; }
+  .review-actions .button { width: 100%; }
+}

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Sable & Stone owner booking review dashboard." />
+    <title>Owner review | Sable & Stone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="owner.css?v=1" />
+</head>
+<body>
+<main class="owner-page">
+    <header class="site-header">
+        <a class="brand" href="index.html" aria-label="Sable and Stone booking page"><span class="brand-mark" aria-hidden="true">S<span>&</span>S</span><span class="brand-name">Sable & Stone</span></a>
+        <span class="owner-label">Owner review</span>
+    </header>
+
+    <section class="owner-intro">
+        <p class="eyebrow">Appointment operations</p>
+        <h1>Review a booking <em>request.</em></h1>
+        <p>Check the details below, then approve the appointment or politely reject it. The decision is recorded by the booking API and continues the n8n workflow.</p>
+    </section>
+
+    <section class="review-card" aria-labelledby="review-title">
+        <div class="review-heading">
+            <div>
+                <p class="eyebrow">Owner decision</p>
+                <h2 id="review-title">Loading request…</h2>
+            </div>
+            <span class="status-pill" id="status-pill">Loading</span>
+        </div>
+        <div class="review-grid" id="booking-details" aria-live="polite">
+            <p class="review-message">Fetching the authoritative booking record…</p>
+        </div>
+        <div class="review-actions" id="review-actions" hidden>
+            <button class="button button-secondary danger" id="reject-button" type="button">Reject request</button>
+            <button class="button button-primary" id="approve-button" type="button">Approve request <span aria-hidden="true">→</span></button>
+        </div>
+        <div class="review-message" id="review-status" role="status" aria-live="polite"></div>
+    </section>
+
+    <p class="owner-footnote">Demo owner dashboard · Add authentication and expiring approval tokens before public deployment.</p>
+</main>
+<script src="owner.js?v=1"></script>
+</body>
+</html>

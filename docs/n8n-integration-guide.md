@@ -195,7 +195,7 @@ n8n should use `bookingReference` to call the API and retrieve the current booki
 
 ### 2. Check whether the event was already processed
 
-I will use `eventId` or `bookingReference` to prevent duplicate side effects. A retry must not send two payment links or create two calendar events.
+The calendar branch now performs an authoritative booking lookup and checks `calendarEventId` before creating an external event. A retry with an existing event ID stops before Google Calendar. The API also treats persistence of the same provider ID as idempotent and rejects replacement with a different ID.
 
 ### 3. Notify the business owner
 
@@ -215,7 +215,13 @@ A screenshot or client message is not enough for a production system. The paymen
 
 ### 7. Create a calendar event
 
-The calendar event should only be created when the booking has been approved and the payment rule has been satisfied.
+The live demo uses an authenticated n8n HTTP Request node against:
+
+```
+POST https://www.googleapis.com/calendar/v3/calendars/{calendarId}/events
+```
+
+The request sends the booking's Johannesburg-local date and time as `dateTime` values with `timeZone: Africa/Johannesburg`. It runs only after the authoritative booking is `APPROVED` and `PAID`, and only when `calendarEventId` is empty. The returned Google event `id` is then persisted through `/calendar-event` before the workflow returns confirmation.
 
 ### 8. Send the final confirmation
 
