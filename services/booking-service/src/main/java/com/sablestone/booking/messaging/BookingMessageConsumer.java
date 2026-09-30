@@ -13,6 +13,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 /**
  * Receives booking-created messages from ActiveMQ.
@@ -29,7 +30,9 @@ public class BookingMessageConsumer {
 
     private final ObjectMapper objectMapper;
     private final String n8nWebhookUrl;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
 
     public BookingMessageConsumer(ObjectMapper objectMapper) {
         this(objectMapper, "");
@@ -60,19 +63,21 @@ public class BookingMessageConsumer {
 
     private void forwardToN8n(String json, String bookingReference) {
         if (n8nWebhookUrl == null || n8nWebhookUrl.isBlank()) {
-            log.debug("n8n forwarding disabled; booking {} remains available on the JMS queue", bookingReference);
+            log.warn("n8n forwarding disabled because N8N_BOOKING_CREATED_WEBHOOK_URL is blank; booking {} was consumed from JMS", bookingReference);
             return;
         }
+        log.info("Forwarding booking {} to n8n webhook {}", bookingReference, n8nWebhookUrl);
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(n8nWebhookUrl))
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(json))
+                    .timeout(Duration.ofSeconds(30))
                     .build();
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IllegalStateException("n8n returned HTTP " + response.statusCode());
+                throw new IllegalStateException("n8n returned HTTP " + response.statusCode() + ": " + response.body());
             }
-            log.info("Forwarded booking {} to n8n", bookingReference);
+            log.info("Forwarded booking {} to n8n successfully with HTTP {}", bookingReference, response.statusCode());
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("Interrupted while forwarding booking to n8n", exception);
