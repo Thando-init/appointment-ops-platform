@@ -76,9 +76,14 @@ async function decide(approvalStatus) {
     const body = await response.json();
     if (!response.ok) throw new Error(body.detail || body.message || "The decision could not be saved.");
     renderBooking(body);
-    reviewStatus.textContent = approvalStatus === "APPROVED"
-      ? "Approved. The automation will continue with the payment step."
-      : "Rejected. The request has been returned to the workflow.";
+    if (approvalStatus === "APPROVED") {
+      const paymentLinkResponse = await fetch(`${API_BASE_URL}/api/v1/bookings/${encodeURIComponent(bookingReference)}/payment-link`, { method: "POST" });
+      if (!paymentLinkResponse.ok) throw new Error("Approved, but the demo payment link could not be created.");
+      const paymentLink = await paymentLinkResponse.json();
+      reviewStatus.innerHTML = `Approved. <a href="${paymentLink.paymentUrl}" target="_blank" rel="noopener">Open the demo payment page</a> for the client.`;
+    } else {
+      reviewStatus.textContent = "Rejected. The request has been returned to the workflow.";
+    }
   } catch (error) {
     reviewStatus.textContent = error.message;
     approveButton.disabled = false;

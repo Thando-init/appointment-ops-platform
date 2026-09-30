@@ -141,7 +141,7 @@ public class AvailabilityController {
         return new BookingRequests.PaymentLinkResponse(
                 bookingReference,
                 "demo-pay-" + bookingReference,
-                "http://localhost:8080/demo-payment/" + bookingReference,
+                "http://localhost:8000/demo-payment.html?bookingReference=" + bookingReference,
                 "demo");
     }
 
