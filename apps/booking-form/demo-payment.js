@@ -1,5 +1,6 @@
-const API_BASE_URL = "http://localhost:8080";
-const N8N_PAYMENT_WEBHOOK_URL = "http://localhost:5678/webhook/payment-confirmed";
+const API_BASE_URL = window.APPOINTMENT_CONFIG?.apiBaseUrl || "http://localhost:8080";
+const N8N_PAYMENT_WEBHOOK_URL = window.APPOINTMENT_CONFIG?.paymentWebhookUrl
+  || "http://localhost:5678/webhook/payment-confirmed";
 const bookingReference = new URLSearchParams(window.location.search).get("bookingReference");
 const title = document.querySelector("#payment-title");
 const pill = document.querySelector("#payment-pill");

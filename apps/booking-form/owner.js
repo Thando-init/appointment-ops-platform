@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8080";
+const API_BASE_URL = window.APPOINTMENT_CONFIG?.apiBaseUrl || "http://localhost:8080";
 const params = new URLSearchParams(window.location.search);
 const bookingReference = params.get("bookingReference");
 

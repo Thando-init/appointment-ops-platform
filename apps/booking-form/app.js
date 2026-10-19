@@ -21,8 +21,8 @@ const notes = document.querySelector("#notes");
 const notesCount = document.querySelector("#notes-count");
 
 // ---------- Runtime configuration ----------
-// The Java API serves availability and booking creation locally.
-const AVAILABILITY_API_BASE_URL = "http://localhost:8080";
+// config.js supplies local defaults and can be replaced for a hosted demo.
+const AVAILABILITY_API_BASE_URL = window.APPOINTMENT_CONFIG?.apiBaseUrl || "http://localhost:8080";
 // Keep this empty while the backend owns booking creation. n8n can be enabled
 // later when the automation workflow is ready to receive booking references.
 const N8N_WEBHOOK_URL = "";

@@ -5,6 +5,7 @@ import com.sablestone.booking.domain.BookingRequests;
 import com.sablestone.booking.service.BookingService;
 import com.sablestone.booking.service.AvailabilityService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,16 +36,22 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/v1")
-@CrossOrigin(origins = {"http://localhost:8000", "http://127.0.0.1:8000"})
+@CrossOrigin(origins = "${CORS_ALLOWED_ORIGINS:http://localhost:8000,http://127.0.0.1:8000}")
 public class AvailabilityController {
 
     private final AvailabilityService availabilityService;
     private final BookingService bookingService;
+    private final String frontendBaseUrl;
 
-    public AvailabilityController(AvailabilityService availabilityService, BookingService bookingService) {
+    public AvailabilityController(
+            AvailabilityService availabilityService,
+            BookingService bookingService,
+            @Value("${APP_FRONTEND_BASE_URL:http://localhost:8000}") String frontendBaseUrl
+    ) {
         // Constructor injection makes this dependency explicit and testable.
         this.availabilityService = availabilityService;
         this.bookingService = bookingService;
+        this.frontendBaseUrl = frontendBaseUrl.replaceAll("/+$", "");
     }
 
     /**
@@ -141,7 +148,7 @@ public class AvailabilityController {
         return new BookingRequests.PaymentLinkResponse(
                 bookingReference,
                 "demo-pay-" + bookingReference,
-                "http://localhost:8000/demo-payment.html?bookingReference=" + bookingReference,
+                frontendBaseUrl + "/demo-payment.html?bookingReference=" + bookingReference,
                 "demo");
     }
 
