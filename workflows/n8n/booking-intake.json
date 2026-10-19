@@ -14,7 +14,8 @@
               }
             ]
           }
-        }
+        },
+        "responseMode": "responseNode"
       },
       "id": "5bb4b4c2-1a4f-4b03-ba58-4e0516f22b1f",
       "name": "Booking Created Webhook",
@@ -102,7 +103,7 @@
         -224,
         -192
       ],
-      "disabled": true
+      "disabled": false
     },
     {
       "parameters": {
@@ -120,7 +121,7 @@
         -160,
         144
       ],
-      "disabled": true
+      "disabled": false
     },
     {
       "parameters": {
@@ -565,7 +566,13 @@
             "index": 0
           }
         ],
-        []
+        [
+          {
+            "node": "Reject Invalid Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Fetch Authoritative Booking": {
@@ -694,7 +701,13 @@
     },
     "Prepare Intake Response": {
       "main": [
-        []
+        [
+          {
+            "node": "Acknowledge Intake",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Save Calendar Event ID": {
