@@ -1,104 +1,39 @@
-# Appointment Ops — Canonical n8n Workflow
+# n8n workflow roadmap
 
-This is the single workflow plan for the appointment operations platform. It is intentionally built as one flow architecture rather than a sequence of replacement exports.
+The importable workflow is [`workflows/n8n/booking-intake.json`](../workflows/n8n/booking-intake.json). The operational steps for importing and testing it are in the [n8n workflow guide](../workflows/n8n/README.md). This page records current scope and what remains before production use.
 
-## Current canonical path
+## Current milestone status
 
-```
-Booking Created Webhook
-        ↓
-Validate Booking Event
-        ↓ valid
-Fetch Authoritative Booking
-        ↓
-Acknowledge Event
-```
+| Area | Current state |
+| --- | --- |
+| Booking intake | Webhook validates the event, fetches the authoritative booking from the API, and returns success or validation-error responses. Manually tested locally. |
+| Owner notification | Email node is configured in n8n and was observed sending the local demo notification. Requires the user's own n8n credential. |
+| Owner decision | Approval and rejection update the booking through the API. The owner-approval webhook is a demo path, not an authenticated public approval system. |
+| Payment link | The approved path returns a local demo payment URL. It does not create a real provider payment link. |
+| Payment confirmation | The demo webhook can mark an approved booking `PAID`; it does not verify a provider signature or transaction. |
+| Calendar | The workflow creates a Google Calendar event and saves its event ID through the API. The API's saved ID is checked before a retry. The external calendar credential is real even though payment is simulated. |
+| Client confirmation / messaging | Not a production-ready provider integration. |
 
-Invalid events go to `Reject Invalid Event` and return HTTP 400. The authoritative lookup calls the Spring Boot API using the booking reference before n8n is allowed to perform side effects.
+These checks describe a manually exercised local demo, not a production service-level guarantee. Use fictional booking details and inspect the API state and n8n execution before retrying a failed run.
 
-## Complete target architecture
+## Target flow
 
-```
-┌──────────────────────────┐
-│ Booking Created Webhook  │
-└────────────┬─────────────┘
-             ↓
-┌──────────────────────────┐
-│ Validate Event            │──invalid──> Reject HTTP 400
-└────────────┬─────────────┘
-             ↓
-┌──────────────────────────┐
-│ Fetch Authoritative      │
-│ Booking from API         │
-└────────────┬─────────────┘
-             ↓
-┌──────────────────────────┐
-│ Register Event Idempotency│──duplicate──> Acknowledge Duplicate
-└────────────┬─────────────┘
-             ↓ new event
-┌──────────────────────────┐
-│ Notify Business Owner    │
-└────────────┬─────────────┘
-             ↓
-┌──────────────────────────┐
-│ Owner Approval Webhook   │
-└───────┬───────────┬──────┘
-        │ approved  │ rejected
-        ↓           ↓
-┌──────────────┐  ┌────────────────────┐
-│ Create        │  │ Update Booking    │
-│ Payment Link  │  │ Rejected          │
-└──────┬───────┘  └─────────┬──────────┘
-       ↓                    ↓
-┌──────────────┐  ┌────────────────────┐
-│ Send Payment  │  │ Notify Client     │
-│ Link          │  │ Rejection         │
-└──────┬───────┘  └────────────────────┘
-       ↓
-┌──────────────────────────┐
-│ Payment Provider Webhook │
-└────────────┬─────────────┘
-             ↓
-┌──────────────────────────┐
-│ Verify Payment with API  │
-└────────────┬─────────────┘
-             ↓ paid
-┌──────────────────────────┐
-│ Create Calendar Event    │
-└────────────┬─────────────┘
-             ↓
-┌──────────────────────────┐
-│ Update Booking Confirmed │
-└────────────┬─────────────┘
-             ↓
-┌──────────────────────────┐
-│ Send Final Confirmation  │
-└──────────────────────────┘
+```text
+Website or other client
+  → API validates and saves booking
+  → durable event delivery
+  → n8n fetches current booking
+  → owner is notified and reviews request
+  → approved request receives provider payment link
+  → provider-signed callback is verified by the API
+  → calendar event is created once and its ID persisted
+  → client receives confirmation
 ```
 
-## Build order inside this same workflow
+The API and PostgreSQL remain the source of truth. n8n coordinates external actions and must not be trusted to invent booking state.
 
-| Phase | Nodes | Current state |
-| --- | --- | --- |
-| Intake | Booking webhook, validation, authoritative lookup, acknowledgement | Working and tested |
-| Idempotency | Authoritative booking lookup and calendar-event guard | Implemented for calendar retries; broader event ledger remains future work |
-| Owner decision | Approval webhook, approved/rejected branches, booking update | Planned |
-| Payment | Payment-link creation, payment webhook, provider verification | Planned; requires provider credentials |
-| Calendar | Authenticated Google Calendar HTTP Request, provider ID persistence, duplicate protection | Working and tested with real events |
-| Communications | Owner/client notifications and failure alerts | Planned; requires provider credentials |
+## Production work still required
 
-## Endpoint contracts needed before provider nodes
+Before real customer use, add owner authentication or expiring signed approval links; authenticate or sign incoming webhooks; replace the demo payment adapter with a payment provider and server-side verification; add end-to-end idempotency for notifications, payment links, and calendar creation; and add backups, privacy/retention controls, monitoring, and retry handling. A transactional outbox would close the remaining gap between committing a booking and reliably delivering its event.
 
-```
-GET  /api/v1/bookings/{bookingReference}
-POST /api/v1/events/{eventId}/claim
-POST /api/v1/bookings/{bookingReference}/approval
-POST /api/v1/bookings/{bookingReference}/payment-verification
-POST /api/v1/bookings/{bookingReference}/confirmation
-```
-
-The first endpoint exists. The remaining endpoints must be implemented before their corresponding n8n nodes are enabled; placeholder nodes should not silently mutate booking state.
-
-## Operating rule
-
-The imported workflow file is the canonical artifact. Future changes should be made by editing and re-importing the same workflow only when necessary, or directly in the n8n editor after the workflow has been imported. We should not create separate replacement workflows for each step.
+See the [owner approval setup](owner-approval-setup.md) and [demo operations](real_demo_operations.md) for the current implementation details.

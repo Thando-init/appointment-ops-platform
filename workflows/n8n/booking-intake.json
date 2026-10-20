@@ -90,7 +90,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "{\n  \"accepted\": true,\n  \"bookingReference\": \"={{ $json.bookingReference }}\",\n  \"authoritativeBooking\": true,\n  \"nextStep\": \"owner-approval\"\n}\n\n",
+        "responseBody": "={{ $json }}",
         "options": {
           "responseCode": 200
         }
