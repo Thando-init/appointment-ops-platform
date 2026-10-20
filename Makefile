@@ -25,6 +25,7 @@ help:
 	@echo "make api       - start the Spring Boot API on port 8080"
 	@echo "make frontend  - serve the booking form on port 8000"
 	@echo "make clean     - remove Maven build output"
+	@echo "make n8n       - start n8n"
 
 # Run the Java unit tests and basic JavaScript syntax checks.
 test:
@@ -56,8 +57,11 @@ api:
 
 # Serve the static frontend through HTTP instead of opening index.html directly.
 frontend:
-	python3 -m http.server 8000 --directory $(FRONTEND_DIR)
+	py -m http.server 8000 --directory $(FRONTEND_DIR)
 
 # Remove generated Maven files. Docker data is not removed by this target.
 clean:
 	cd $(API_DIR) && mvn clean
+
+n8n:
+	docker compose up -d n8n
